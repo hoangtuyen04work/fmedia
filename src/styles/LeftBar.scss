@@ -1,0 +1,53 @@
+// src/components/LeftBar.scss
+$facebook-blue: #1877f2;
+$light-gray: #72c3c9;
+$hover-bg: #e4e6eb;
+
+.leftbar {
+  width: 20%;
+  // position: fixed;
+  // top: 56px; // Below the header
+  // left: 0;
+  height: calc(100vh - 56px);
+  background-color: $light-gray;
+  padding: 10px 0;
+  overflow-y: auto;
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
+    margin-bottom: 5px;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #1c1e21;
+    font-size: 16px;
+
+    &:hover {
+      background-color: $hover-bg;
+      border-radius: 8px;
+    }
+  }
+
+  &__icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 20px;
+  }
+
+  &__text {
+    flex: 1;
+  }
+}

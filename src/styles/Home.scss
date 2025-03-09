@@ -1,0 +1,12 @@
+// src/components/Home.scss
+.home {
+    display: flex;
+    margin-top: 68px; // Offset for the fixed header
+  
+    &__main {
+      flex: 1; // Takes up remaining space between LeftBar and RightBar
+      padding: 20px;
+      // background-color: #fff;
+      // min-height: calc(100vh - 56px);
+    }
+  }
