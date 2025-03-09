@@ -1,21 +1,40 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Post.scss";
+import ModalComment from "./ModalComment"; // Adjust the path as needed
 
 function Post({ profilePic, username, time, text, image }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeAnimation, setLikeAnimation] = useState("");
+  const [comments, setComments] = useState([
+    { id: 1, user: "John Doe", text: "Great post!", pic: "https://via.placeholder.com/32" },
+    { id: 2, user: "Jane Smith", text: "Love this!", pic: "https://via.placeholder.com/32" },
+  ]);
 
-  // Prevent scrolling when modal is open
+  // Prevent scrolling when either modal is open
   useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden"; // Disable scrolling
+    if (isModalOpen || isCommentModalOpen) {
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "auto"; // Re-enable scrolling
+      document.body.style.overflow = "auto";
     }
-    // Cleanup on unmount or when modal closes
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isModalOpen]);
+  }, [isModalOpen, isCommentModalOpen]);
+
+  const handleLikeClick = () => {
+    if (isLiked) {
+      setIsLiked(false);
+      setLikeAnimation("animate-unlike");
+    } else {
+      setIsLiked(true);
+      setLikeAnimation("animate-like");
+    }
+    // Reset animation after it plays
+    setTimeout(() => setLikeAnimation(""), 300);
+  };
 
   return (
     <div className="post">
@@ -32,12 +51,17 @@ function Post({ profilePic, username, time, text, image }) {
           src={image}
           alt="Post content"
           className="post__image"
-          onClick={() => setIsModalOpen(true)} // Open modal when clicked
+          onClick={() => setIsModalOpen(true)}
         />
       )}
       <div className="post__actions">
-        <button>👍 Like</button>
-        <button>💬 Comment</button>
+        <button
+          className={`like-button ${isLiked ? "liked" : ""} ${likeAnimation}`}
+          onClick={handleLikeClick}
+        >
+          👍 Like
+        </button>
+        <button onClick={() => setIsCommentModalOpen(true)}>💬 Comment</button>
         <button>↪ Share</button>
       </div>
 
@@ -52,6 +76,18 @@ function Post({ profilePic, username, time, text, image }) {
           </div>
         </div>
       )}
+
+      {/* Comment modal */}
+      <ModalComment
+        isOpen={isCommentModalOpen}
+        onClose={() => setIsCommentModalOpen(false)}
+        profilePic={profilePic}
+        username={username}
+        time={time}
+        text={text}
+        image={image}
+        comments={comments}
+      />
     </div>
   );
 }

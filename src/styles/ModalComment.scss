@@ -1,0 +1,157 @@
+$facebook-blue: #1877f2;
+$light-gray: #f0f2f5;
+$border-gray: #ced0d4;
+$text-color: #1c1e21;
+$secondary-text: #65676b;
+
+.post {
+    &__modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none; // Hidden by default
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        overflow-y: auto;
+        
+        &.active {
+            display: flex; // Show when active
+        }
+    }
+
+    &__modal-content {  // Added content wrapper
+        background: white;
+        border-radius: 8px;
+        max-width: 500px;
+        width: 100%;
+        margin: 20px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    &__comment-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        font-weight: 600;
+        color: $text-color;
+        border-bottom: 1px solid $border-gray;
+    }
+
+    &__comment-modal-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: $secondary-text;
+        &:hover {
+            color: $text-color;
+        }
+    }
+
+    &__header {  // Added header styling
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+    }
+
+    &__pic {  // Added profile pic styling
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    &__name {  // Added username styling
+        display: block;
+        font-weight: 600;
+        color: $text-color;
+    }
+
+    &__time {  // Added time styling
+        color: $secondary-text;
+        font-size: 12px;
+    }
+
+    &__text {  // Added post text styling
+        padding: 0 15px 10px;
+    }
+
+    &__image {  // Fixed post image styling
+        width: 100%;
+        height: auto;
+        max-height: 70vh;
+        object-fit: contain;
+        display: block;
+    }
+
+    &__comment-list {
+        padding: 10px 15px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    &__comment-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 10px;
+
+        img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        div {
+            background: $light-gray;
+            padding: 8px 12px;
+            border-radius: 12px;
+            color: $text-color;
+        }
+    }
+
+    &__comment-input {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        border-top: 1px solid $border-gray;
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid $border-gray;
+            border-radius: 20px;
+            outline: none;
+            margin-right: 10px;
+        }
+
+        button {
+            background: $facebook-blue;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+
+            &:hover {
+                background: darken($facebook-blue, 10%);
+            }
+        }
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

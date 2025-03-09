@@ -46,7 +46,7 @@ $secondary-text: #65676b;
     object-fit: cover;
     border-radius: 8px;
     margin-bottom: 10px;
-    cursor: pointer; // Indicates the image is clickable
+    cursor: pointer;
   }
 
   &__modal {
@@ -54,27 +54,27 @@ $secondary-text: #65676b;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100vh; // Use viewport height for full coverage
-    background: rgba(0, 0, 0, 0.8); // Dark overlay
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    overflow: hidden; // Prevent scrolling
+    overflow: hidden;
   }
 
   &__modal-content {
     position: relative;
-    max-width: 90vw; // Use viewport width for responsiveness
-    max-height: 90vh; // Use viewport height for responsiveness
-    overflow: hidden; // Ensure no internal scrolling
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
   }
 
   &__modal-image {
     width: 100%;
     height: auto;
-    max-height: 90vh; // Limit height to viewport
-    object-fit: contain; // Preserve aspect ratio without cropping
+    max-height: 90vh;
+    object-fit: contain;
     border-radius: 8px;
   }
 
@@ -88,7 +88,7 @@ $secondary-text: #65676b;
     border-radius: 50%;
     font-size: 18px;
     cursor: pointer;
-    z-index: 1100; // Ensure button is above image
+    z-index: 1100;
   }
 
   &__actions {
@@ -109,6 +109,34 @@ $secondary-text: #65676b;
         background-color: $light-gray;
         border-radius: 5px;
       }
+
+      &.liked {
+        color: $facebook-blue;
+        font-weight: bold;
+      }
+    }
+
+    .like-button {
+      transition: transform 0.2s ease;
+      &.animate-like {
+        animation: likeAnimation 0.3s ease;
+      }
+      &.animate-unlike {
+        animation: unlikeAnimation 0.3s ease;
+      }
     }
   }
+}
+
+// Animations for Like button
+@keyframes likeAnimation {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes unlikeAnimation {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.8); }
+  100% { transform: scale(1); }
 }
