@@ -1,4 +1,3 @@
-// src/styles/Post.scss
 $facebook-blue: #1877f2;
 $light-gray: #f0f2f5;
 $border-gray: #ced0d4;
@@ -43,8 +42,53 @@ $secondary-text: #65676b;
 
   &__image {
     width: 100%;
+    max-height: 500px;
+    object-fit: cover;
     border-radius: 8px;
     margin-bottom: 10px;
+    cursor: pointer; // Indicates the image is clickable
+  }
+
+  &__modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh; // Use viewport height for full coverage
+    background: rgba(0, 0, 0, 0.8); // Dark overlay
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    overflow: hidden; // Prevent scrolling
+  }
+
+  &__modal-content {
+    position: relative;
+    max-width: 90vw; // Use viewport width for responsiveness
+    max-height: 90vh; // Use viewport height for responsiveness
+    overflow: hidden; // Ensure no internal scrolling
+  }
+
+  &__modal-image {
+    width: 100%;
+    height: auto;
+    max-height: 90vh; // Limit height to viewport
+    object-fit: contain; // Preserve aspect ratio without cropping
+    border-radius: 8px;
+  }
+
+  &__modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1100; // Ensure button is above image
   }
 
   &__actions {
