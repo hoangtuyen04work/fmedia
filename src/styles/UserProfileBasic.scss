@@ -1,40 +1,62 @@
-// src/styles/UserProfileBasic.scss
 .user-profile-basic {
-    width: 100%;
-    
-    &__header {
-      display: flex;
-      align-items: center;
-      padding: 0.5rem;
-      background: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-      &:hover {
-        background-color: #dfe4e8;
-    }
-    }
-  
-    &__pic {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 0.75rem;
-    }
-  
-    &__info {
-      display: flex;
-      flex-direction: column;
-    }
-  
-    &__name {
-      font-weight: 600;
-      color: #333;
-      font-size: 1rem;
-    }
-  
-    &__id {
-      color: #666;
-      font-size: 0.875rem;
+  width: 100%;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    background: #fff;
+    border-radius: 8px;
+
+  }
+
+  &__pic {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    justify-content: space-between; // Thêm justify-content
+    &:hover {
+      background-color: #dfe4e8;
     }
   }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; // Cho phép info chiếm không gian còn lại
+    cursor: pointer;
+    justify-content: space-between; // Thêm justify-content
+
+  }
+
+  &__name {
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+    cursor: pointer;
+    justify-content: space-between; // Thêm justify-content
+  }
+
+  &__id {
+    color: #666;
+    font-size: 0.875rem;
+    cursor: pointer;
+    justify-content: space-between; // Thêm justify-content
+  }
+
+  &__friend-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #003ad8; // Màu của icon
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    &:hover {
+      background-color: #dfe4e8;
+    }
+  }
+}

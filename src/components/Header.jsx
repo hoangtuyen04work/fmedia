@@ -10,6 +10,9 @@ function Header() {
   const [searchType, setSearchType] = useState(null); // 'post' hoặc 'user'
   const [searchValue, setSearchValue] = useState(""); // Nội dung người dùng nhập vào
 
+  const handleLogout = () => {
+    navigate("/auth")
+  }
   const handleSearch = () => {
     if (searchValue.trim() !== "") {
       console.log(`Searching ${searchType}:`, searchValue);
@@ -73,7 +76,7 @@ function Header() {
           <CgProfile />
         </div>
         <div className="header__icon">🔔</div>
-        <div className="header__icon header__logout">
+        <div className="header__icon header__logout" onClick={handleLogout}>
           <IoIosLogOut />
         </div>
       </div>

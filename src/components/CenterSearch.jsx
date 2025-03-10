@@ -23,8 +23,26 @@ function CenterSearch() {
     profilePic: "../../public/download.jpg",
     username: `User ${index + 1}`,
     userId: `@user${index + 1}`,
+    friendStatus: "none"
   }));
-
+  const handleFriendAction = (status) => {
+    switch (status) {
+      case "none":
+        console.log("Add friend clicked!");
+        // Logic kết bạn
+        break;
+      case "pending":
+        console.log("Cancel friend request clicked!");
+        // Logic hủy lời mời
+        break;
+      case "friends":
+        console.log("Unfriend clicked!");
+        // Logic hủy kết bạn
+        break;
+      default:
+        break;
+    }
+  };
   useEffect(() => {
     const { searchType, searchValue } = location.state || {};
     
@@ -99,6 +117,9 @@ function CenterSearch() {
                 profilePic={user.profilePic}
                 username={user.username}
                 userId={user.userId}
+                friendStatus={user.friendStatus}
+                onFriendAction={handleFriendAction}
+
               />
             </div>
           ))}
