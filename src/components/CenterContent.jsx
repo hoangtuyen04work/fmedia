@@ -13,11 +13,11 @@ function CenterContent() {
   // Initial sample posts
   useEffect(() => {
     const initialPosts = Array.from({ length: 20 }, (_, index) => ({
-      profilePic: "https://via.placeholder.com/36",
+      profilePic: "../../public/download.jpg",
       username: `User ${index + 1}`,
       time: `${index + 1} hrs ago`,
       text: `This is post number ${index + 1}. Enjoying the day!`,
-      image: index % 2 === 0 ? "https://via.placeholder.com/500x300" : null,
+      image: index % 2 === 0 ? "../../public/download.jpg" : null,
     }));
     setPosts(initialPosts);
   }, []);
