@@ -1,0 +1,40 @@
+// src/styles/UserProfileBasic.scss
+.user-profile-basic {
+    width: 100%;
+    
+    &__header {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem;
+      background: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      &:hover {
+        background-color: #dfe4e8;
+    }
+    }
+  
+    &__pic {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 0.75rem;
+    }
+  
+    &__info {
+      display: flex;
+      flex-direction: column;
+    }
+  
+    &__name {
+      font-weight: 600;
+      color: #333;
+      font-size: 1rem;
+    }
+  
+    &__id {
+      color: #666;
+      font-size: 0.875rem;
+    }
+  }

@@ -4,6 +4,7 @@ import Header from './components/Header'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
+import Search from './pages/Search'
 // import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/search" element={<Search />} />
+
         </Routes>
       </main>
   </Router>
