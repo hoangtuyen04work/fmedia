@@ -39,7 +39,7 @@ function Post({ profilePic, username, time, text, image }) {
       };
       setComments([...comments, newCommentObj]);
       setNewComment("");
-      setIsCommentModalOpen(false);
+      // setIsCommentModalOpen(false);
     }
   };
 
