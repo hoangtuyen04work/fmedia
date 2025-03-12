@@ -4,7 +4,7 @@ import { CgProfile } from "react-icons/cg";
 import { IoIosLogOut } from "react-icons/io";
 import { AiOutlineSearch } from "react-icons/ai";
 import "../styles/Header.scss";
-
+import NotificationDropdown from "./NotificationDropDown";
 function Header() {
   const navigate = useNavigate();
   const [searchType, setSearchType] = useState(null); // 'post' hoặc 'user'
@@ -72,14 +72,14 @@ function Header() {
       </div>
 
       <div className="header__icons">
-        <div className="header__icon" onClick={() => navigate("/profile")}>
-          <CgProfile />
-        </div>
-        <div className="header__icon">🔔</div>
-        <div className="header__icon header__logout" onClick={handleLogout}>
-          <IoIosLogOut />
-        </div>
-      </div>
+  <div className="header__icon" onClick={() => navigate("/profile")}>
+    <CgProfile />
+  </div>
+  <NotificationDropdown />
+  <div className="header__icon header__logout" onClick={handleLogout}>
+    <IoIosLogOut />
+  </div>
+</div>
     </header>
   );
 }

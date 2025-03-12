@@ -1,0 +1,34 @@
+.notification-container {
+    position: relative;
+  }
+  
+  .notification-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 350px;
+    max-width: 50vw;
+    max-height: 60vh;
+    overflow: auto;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 10px;
+    z-index: 1000;
+  }
+  
+  .notification-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .notification-item:last-child {
+    border-bottom: none;
+  }
+  
+  .no-notifications {
+    text-align: center;
+    padding: 10px;
+    color: gray;
+  }
+  
