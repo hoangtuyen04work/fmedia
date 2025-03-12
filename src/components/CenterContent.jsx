@@ -1,14 +1,14 @@
-// src/components/CenterContent.jsx
 import React, { useEffect, useRef, useState } from "react";
 import Post from "./Post";
 import "../styles/CenterContent.scss";
+import { IoSend, IoImageOutline, IoClose } from "react-icons/io5"; // Added IoClose for the remove button
 
 function CenterContent() {
-  const postsRef = useRef([]); // Reference to track posts
-  const [posts, setPosts] = useState([]); // State to manage posts dynamically
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
-  const [newPostText, setNewPostText] = useState(""); // State for new post text
-  const [newPostImage, setNewPostImage] = useState(null); // State for new post image
+  const postsRef = useRef([]);
+  const [posts, setPosts] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newPostText, setNewPostText] = useState("");
+  const [newPostImage, setNewPostImage] = useState(null);
 
   // Initial sample posts
   useEffect(() => {
@@ -46,9 +46,14 @@ function CenterContent() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file); // Create a temporary URL for preview
+      const imageUrl = URL.createObjectURL(file);
       setNewPostImage(imageUrl);
     }
+  };
+
+  // Handle image removal
+  const handleImageRemove = () => {
+    setNewPostImage(null); // Clear the image
   };
 
   // Handle post submission
@@ -61,10 +66,10 @@ function CenterContent() {
         text: newPostText,
         image: newPostImage,
       };
-      setPosts([newPost, ...posts]); // Add new post to the top
-      setNewPostText(""); // Reset text
-      setNewPostImage(null); // Reset image
-      setIsModalOpen(false); // Close modal
+      setPosts([newPost, ...posts]);
+      setNewPostText("");
+      setNewPostImage(null);
+      setIsModalOpen(false);
     }
   };
 
@@ -75,7 +80,7 @@ function CenterContent() {
         <div className="center-content__create-post">
           <div
             className="center-content__input-wrapper"
-            onClick={() => setIsModalOpen(true)} // Open modal on click
+            onClick={() => setIsModalOpen(true)}
           >
             <img
               src="https://via.placeholder.com/36"
@@ -120,21 +125,35 @@ function CenterContent() {
               className="modal__textarea"
             />
             {newPostImage && (
-              <img
-                src={newPostImage}
-                alt="Preview"
-                className="modal__image-preview"
-              />
+              <div className="modal__image-preview-wrapper">
+                <img
+                  src={newPostImage}
+                  alt="Preview"
+                  className="modal__image-preview"
+                />
+                <button
+                  onClick={handleImageRemove}
+                  className="modal__remove-image"
+                >
+                  <IoClose />
+                </button>
+              </div>
             )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="modal__file-input"
-            />
-            <div className="modal__buttons">
-              <button onClick={handlePostSubmit}>Post</button>
-              <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+            <div className="modal__actions">
+              <label htmlFor="image-upload" className="image-upload">
+                <IoImageOutline />
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <div className="modal__buttons">
+                <button onClick={handlePostSubmit}>Post</button>
+                <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+              </div>
             </div>
           </div>
         </div>
