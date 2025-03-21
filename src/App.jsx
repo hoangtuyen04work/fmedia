@@ -5,12 +5,16 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
 import Auth from './pages/Auth'; 
+import { useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
 function App() {
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated)
   return (
     <Router>
       <Routes>
-        <Route path="/auth" element={<Auth />} /> {/* Auth route without header */}
-        <Route path="/*" element={
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/*" element={
+        isAuthenticated ? (
           <>
             <Header />
             <main style={{ width: "100%", position: "fixed", top: 0 }}>
@@ -21,8 +25,11 @@ function App() {
               </Routes>
             </main>
           </>
-        } />
-      </Routes>
+        ) : (
+          <Navigate to="/auth" replace />
+        )
+      } />
+    </Routes>
     </Router>
   );
 }
