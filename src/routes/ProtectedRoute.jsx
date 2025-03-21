@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, user } = useSelector((state) => state.user);
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/auth" />;
   }
 
   const roles = user.roles || '[]';
