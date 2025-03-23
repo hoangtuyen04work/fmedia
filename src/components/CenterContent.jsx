@@ -1,23 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import Post from "./Post";
 import "../styles/CenterContent.scss";
-import { IoSend, IoImageOutline, IoClose } from "react-icons/io5"; // Added IoClose for the remove button
-
+import { IoImageOutline, IoClose } from "react-icons/io5"; // Added IoClose for the remove button
+import { useSelector } from "react-redux";
+import { newPost } from "../services/postService";
 function CenterContent() {
   const postsRef = useRef([]);
   const [posts, setPosts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newPostText, setNewPostText] = useState("");
   const [newPostImage, setNewPostImage] = useState(null);
+  const token = useSelector((state) => state.user.token);
 
-  // Initial sample posts
   useEffect(() => {
     const initialPosts = Array.from({ length: 20 }, (_, index) => ({
-      profilePic: "../../public/download.jpg",
-      username: `User ${index + 1}`,
-      time: `${index + 1} hrs ago`,
-      text: `This is post number ${index + 1}. Enjoying the day!`,
-      image: index % 2 === 0 ? "../../public/download.jpg" : null,
+      avatarLink: "../../public/download.jpg",
+      userName: `User ${index + 1}`,
+      creationDate: `${index + 1} hrs ago`,
+      content: `This is post number ${index + 1}. Enjoying the day!`,
+      imageLink: index % 2 === 0 ? "../../public/download.jpg" : null,
+      customId: "12312",
+      modifiedDate: ""
     }));
     setPosts(initialPosts);
   }, []);
@@ -45,27 +48,25 @@ function CenterContent() {
   // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setNewPostImage(imageUrl);
-    }
+    setNewPostImage(file);
   };
 
   // Handle image removal
   const handleImageRemove = () => {
-    setNewPostImage(null); // Clear the image
+    setNewPostImage(null);
   };
-
+  // avaterLink, userName, creationDate, content, imageLink
   // Handle post submission
-  const handlePostSubmit = () => {
+  const handlePostSubmit = async () => {
     if (newPostText || newPostImage) {
-      const newPost = {
-        profilePic: "https://via.placeholder.com/36",
-        username: "You",
-        time: "Just now",
-        text: newPostText,
-        image: newPostImage,
+      const newPostData = {
+        content: newPostText,
+        imageFile: newPostImage,
       };
+
+      const data = await newPost(token, newPostData);
+      console.log("data", data);
+
       setPosts([newPost, ...posts]);
       setNewPostText("");
       setNewPostImage(null);
@@ -103,11 +104,13 @@ function CenterContent() {
             className="scroll-animation"
           >
             <Post
-              profilePic={post.profilePic}
-              username={post.username}
-              time={post.time}
-              text={post.text}
-              image={post.image}
+              avatarLink={post.avatarLink}
+              userName={post.userName}
+              id={post.id}
+              customId={post.customId}
+              creationDate={post.creationDate}
+              content={post.content}
+              imageLink={post.imageLink}
             />
           </div>
         ))}

@@ -1,24 +1,22 @@
-// src/components/CenterProfile.jsx
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/CenterProfile.scss";
 import Post from "./Post";
+import { useSelector } from "react-redux";
+import { getMyProfile } from "../services/userService";
+import { getMyPost } from "../services/postService";
+
 function CenterProfile() {
-    const [isEditing, setIsEditing] = useState(false);
-      const [posts, setPosts] = useState([]); // State to manage posts dynamically
-      const postsRef = useRef([]); // Reference to track posts
-    
-  const [profileData, setProfileData] = useState({
-    name: "John Doe",
-    email: "john@example.com",
-    bio: "Web Developer",
-    location: "New York",
-    avatar: "../../public/download.jpg",
-    userId: "tunsdsd23",
-      phone: "0123123123",
-      dob: "12/12/2002",
-    creationDate: "23/12/2024"
-  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const postsRef = useRef([]);
+  const token = useSelector((state) => state.user.token);
+  const [profileData, setProfileData] = useState({});
   const [tempData, setTempData] = useState({ ...profileData });
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const size = 10;
+  const loaderRef = useRef(null);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -56,7 +54,8 @@ function CenterProfile() {
       reader.readAsDataURL(file);
     }
   };
-useEffect(() => {
+
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -75,37 +74,81 @@ useEffect(() => {
     return () => observer.disconnect();
   }, [posts]);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage((prevPage) => {
+            const newPage = prevPage + 1;
+            return newPage;
+          });
+          if (loaderRef.current) {
+            observer.unobserve(loaderRef.current);
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+  
+    if (loaderRef.current && !loading) {
+      observer.observe(loaderRef.current);
+    }
+  
+    return () => {
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current);
+      }
+    };
+  }, [hasMore, loading]); // Chạy lại khi hasMore hoặc loading thay đổi
+
+  const fetchMyProfile = async () => {
+    const data = await getMyProfile(token);
+    setProfileData(data.data);
+  };
+
+  const fetchMyPost = async (currentPage) => {
+    if (!hasMore || loading) return;
+    setLoading(true);
+    try {
+      const data = await getMyPost(token, currentPage, size);
+      const newPosts = data.data.data.content;
+      if (newPosts.length < size) {
+        setHasMore(false);
+      }
+      setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchMyProfile();
+  }, []);
 
   useEffect(() => {
-    const initialPosts = Array.from({ length: 20 }, (_, index) => ({
-      profilePic: "../../public/download.jpg",
-      username: `User ${index + 1}`,
-      time: `${index + 1} hrs ago`,
-      text: `This is post number ${index + 1}. Enjoying the day!`,
-      image: index % 2 === 0 ? "../../public/download.jpg" : null,
-      
-    }));
-    setPosts(initialPosts);
-  }, []);
+    fetchMyPost(page);
+  }, [page]);
 
   return (
     <div className="center-profile">
       {!isEditing ? (
         <div className="profile-display">
           <div className="avatar-container">
-            <img src={profileData.avatar} alt="User avatar" className="avatar" />
-                  </div>
-                  <div className="profile-field">
+            <img src={profileData.imageLink} alt="User avatar" className="avatar" />
+          </div>
+          <div className="profile-field">
             <span className="label">Bio:</span>
             <span className="value">{profileData.bio}</span>
           </div>
           <div className="profile-field">
-            <span className="label">User Id:</span>
-            <span className="value">{profileData.userId}</span>
-          </div>        
+            <span className="label">CustomId Id:</span>
+            <span className="value">{profileData.customId}</span>
+          </div>
           <div className="profile-field">
-            <span className="label">Name:</span>
-            <span className="value">{profileData.name}</span>
+            <span className="label">User Name:</span>
+            <span className="value">{profileData.userName}</span>
           </div>
           <div className="profile-field">
             <span className="label">Email:</span>
@@ -114,18 +157,18 @@ useEffect(() => {
           <div className="profile-field">
             <span className="label">Phone:</span>
             <span className="value">{profileData.phone}</span>
-                  </div>
-                  <div className="profile-field">
+          </div>
+          <div className="profile-field">
             <span className="label">Date of birth:</span>
             <span className="value">{profileData.dob}</span>
-                  </div>
-                  <div className="profile-field">
+          </div>
+          <div className="profile-field">
             <span className="label">Creation date:</span>
             <span className="value">{profileData.creationDate}</span>
           </div>
           <div className="profile-field">
-            <span className="label">Location:</span>
-            <span className="value">{profileData.location}</span>
+            <span className="label">Address:</span>
+            <span className="value">{profileData.address}</span>
           </div>
           <button className="edit-btn" onClick={handleEdit}>
             Edit Profile
@@ -144,8 +187,8 @@ useEffect(() => {
                 onChange={handleAvatarChange}
               />
             </div>
-        </div>
-        <div className="form-group">
+          </div>
+          <div className="form-group">
             <label htmlFor="bio">Bio:</label>
             <textarea
               id="bio"
@@ -154,7 +197,6 @@ useEffect(() => {
               onChange={handleChange}
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="name">Name:</label>
             <input
@@ -185,7 +227,6 @@ useEffect(() => {
               onChange={handleChange}
             />
           </div>
-                      
           <div className="form-group">
             <label htmlFor="dob">Date of birth:</label>
             <input
@@ -206,7 +247,6 @@ useEffect(() => {
               onChange={handleChange}
             />
           </div>
-
           <div className="form-actions">
             <button type="submit" className="save-btn">
               Save
@@ -216,22 +256,32 @@ useEffect(() => {
             </button>
           </div>
         </form>
-          )}
-        {posts.map((post, index) => (
-          <div
-            key={index}
-            ref={(el) => (postsRef.current[index] = el)}
-            className="scroll-animation"
-          >
-            <Post
-              profilePic={post.profilePic}
-              username={post.username}
-              time={post.time}
-              text={post.text}
-              image={post.image}
-            />
-          </div>
-        ))}
+      )}
+      {posts.map((post, index) => (
+        <div
+          key={index}
+          ref={(el) => (postsRef.current[index] = el)}
+          className="scroll-animation"
+        >
+          <Post
+            avatarLink={post.avatarLink}
+            userName={post.userName}
+            id={post.id}
+            customId={post.customId}
+            creationDate={post.creationDate}
+            content={post.content}
+            imageLink={post.imageLink}
+          />
+        </div>
+      ))}
+      {hasMore && (
+        <div ref={loaderRef} style={{ height: "20px", textAlign: "center" }}>
+          {loading && <p>Loading more posts...</p>}
+        </div>
+      )}
+      {!hasMore && posts.length > 0 && (
+        <p style={{ textAlign: "center" }}>No more posts to load.</p>
+      )}
     </div>
   );
 }

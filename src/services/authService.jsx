@@ -2,11 +2,7 @@ import api from "../api/custom-axios";
 
 
 const signup = (userCreationRequest) => {
-    return api.post(`/signup`, {
-        customId: userCreationRequest.customId,
-        userName: userCreationRequest.userName,
-        password: userCreationRequest.password
-    }); // ✅ Gửi trực tiếp dữ liệu
+    return api.post(`/signup`, userCreationRequest); // ✅ Gửi trực tiếp dữ liệu
 };
 
 const login = (userCreationRequest) => {

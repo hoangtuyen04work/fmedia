@@ -1,16 +1,18 @@
 import React from "react";
 import "../styles/UserProfileBasic.scss";
 import { FaUserPlus, FaUserCheck, FaClock } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-function UserProfileBasic({
-  profilePic = "https://via.placeholder.com/32",
-  username = "John Doe",
-  userId = "@johndoe",
-  friendStatus,
-  onFriendAction, // Chỉ sử dụng một prop duy nhất
+function UserProfileBasic({imageLink, userName, customId, userId,  friendStatus, onFriendAction, 
 }) {
+  const navigate = useNavigate();
   const handleProfileClick = () => {
-    // Xử lý sự kiện click vào header (nếu cần)
+    navigate("/search", { 
+      state: { 
+        searchType, 
+        searchValue 
+      } 
+    });
   };
 
   const handleFriendActionClick = (e) => {
@@ -56,13 +58,13 @@ function UserProfileBasic({
     <div className="user-profile-basic">
       <div className="user-profile-basic__header" onClick={handleProfileClick}>
         <img
-          src={profilePic}
+          src={imageLink}
           alt="User profile"
           className="user-profile-basic__pic"
         />
         <div className="user-profile-basic__info">
-          <span className="user-profile-basic__name">{username}</span>
-          <span className="user-profile-basic__id">{userId}</span>
+          <span className="user-profile-basic__name">{userName}</span>
+          <span className="user-profile-basic__id">{customId}</span>
         </div>
         {renderFriendButton()}
       </div>
