@@ -1,61 +1,76 @@
 // src/components/Post.jsx
 import React, { useState } from "react";
 import "../styles/Post.scss";
+import { like, unLike } from "../services/postService";
+import { useSelector } from "react-redux";
+import { getAllComment, sendComment } from "../services/commentService";
 
-function Post({ profilePic, username, time, text, image }) {
+
+
+function Post({id,  avatarLink, customId, userName, creationDate,  content, imageLink }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeAnimation, setLikeAnimation] = useState("");
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState([
-    { id: 1, user: "John Doe", text: "Great post!", pic: "https://via.placeholder.com/32" },
-    { id: 2, user: "Jane Smith", text: "Love this!", pic: "https://via.placeholder.com/32" },
-    { id: 1, user: "John Doe", text: "Great post!", pic: "https://via.placeholder.com/32" },
-    { id: 2, user: "Jane Smith", text: "Love this!", pic: "https://via.placeholder.com/32" },
-    { id: 1, user: "John Doe", text: "Great post!", pic: "https://via.placeholder.com/32" },
-    { id: 2, user: "Jane Smith", text: "Love this!", pic: "https://via.placeholder.com/32" },
-    { id: 1, user: "John Doe", text: "Great post!", pic: "https://via.placeholder.com/32" },
-    { id: 2, user: "Jane Smith", text: "Love this!", pic: "https://via.placeholder.com/32" },
-  ]);
-
-  const handleLikeClick = () => {
+  const [comments, setComments] = useState([]);
+  const token = useSelector((state) => state.user.token);
+  const userId = useSelector((state) => state.user.user.userId);
+  const handleLikeClick = async () => {
     if (isLiked) {
       setIsLiked(false);
+      const request = {
+        postId: id,
+        userId: userId
+      }
+      const data = await unLike(token, request);
+      console.log("data", data)
       setLikeAnimation("animate-unlike");
     } else {
-      setIsLiked(true);
+      const data = await setIsLiked(true);
+      console.log("data", data)
+      const request = {
+        postId: id,
+        userId: userId,
+        reaction: 'LIKE'
+      }
+      like(token, request);
       setLikeAnimation("animate-like");
     }
     setTimeout(() => setLikeAnimation(""), 300);
   };
 
-  const handleCommentSubmit = () => {
+  const handleCommentSubmit = async  () => {
     if (newComment.trim()) {
       const newCommentObj = {
-        id: comments.length + 1,
-        user: "You",
-        text: newComment,
-        pic: "https://via.placeholder.com/32"
+        postId: id,
+        content: newComment,
+        imageLink: "https://via.placeholder.com/32"
       };
-      setComments([...comments, newCommentObj]);
+      const data = await sendComment(token, newCommentObj);
+      setComments([...comments, data.data.data]);
       setNewComment("");
-      // setIsCommentModalOpen(false);
     }
   };
+
+  const handleOpenComment = async () => {
+    setIsCommentModalOpen(true);
+    const data = await getAllComment(token, id);
+    setComments(data.data.data.content)
+  }
 
   return (
     <div className="post">
       <div className="post__header">
-        <img src={profilePic} alt="User" className="post__pic" />
+        <img src={avatarLink} alt="User" className="post__pic" />
         <div>
-          <span className="post__name">{username}</span>
-          <span className="post__time">{time}</span>
+          <span className="post__name">{userName}</span>
+          <span className="post__time">{creationDate}</span>
         </div>
       </div>
-      <p className="post__text">{text}</p>
-      {image && (
+      <p className="post__text">{content}</p>
+      {imageLink && (
         <img
-          src={image}
+          src={imageLink}
           alt="Post content"
           className="post__image"
         />
@@ -67,15 +82,13 @@ function Post({ profilePic, username, time, text, image }) {
         >
           👍 Like
         </button>
-        <button onClick={() => setIsCommentModalOpen(true)}>💬 Comment</button>
+        <button onClick={handleOpenComment}>💬 Comment</button>
         <button>↪ Share</button>
       </div>
 
-      {/* Full-screen Comment Modal */}
       {isCommentModalOpen && (
         <div className="post__comment-modal">
           <div className="post__comment-modal-content">
-            {/* Header */}
             <div className="post__comment-modal-header">
               <h2>Comments</h2>
               <button 
@@ -86,37 +99,20 @@ function Post({ profilePic, username, time, text, image }) {
               </button>
             </div>
 
-            {/* Original Post Preview */}
             <div className="post__comment-modal-post">
-              <div className="post__header">
-                <img src={profilePic} alt="User" className="post__pic" />
-                <div>
-                  <span className="post__name">{username}</span>
-                  <span className="post__time">{time}</span>
-                </div>
-              </div>
-              <p className="post__text">{text}</p>
-              {image && (
-                <img
-                  src={image}
-                  alt="Post content"
-                  className="post__image"
-                />
-              )}
-                          {/* Comments List */}
-            <div className="post__comments-list">
-              {comments.map(comment => (
-                <div key={comment.id} className="post__comment">
-                  <img src={comment.pic} alt={comment.user} className="post__comment-pic" />
-                  <div className="post__comment-body">
-                    <span className="post__comment-user">{comment.user}</span>
-                    <p className="post__comment-text">{comment.text}</p>
+              <div className="post__comments-list">
+                {comments.map(comment => (
+                  <div key={comment.id} className="post__comment">
+                    <img src={comment.imageLink} alt={comment.userName} className="post__comment-pic" />
+                    <div className="post__comment-body">
+                      <span className="post__comment-user">{comment.userName}</span>
+                      <p className="post__comment-text">{comment.content}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-            </div>
-            {/* Comment Input */}
+
             <div className="post__comment-input-area">
               <img 
                 src="https://via.placeholder.com/32" 
@@ -129,7 +125,7 @@ function Post({ profilePic, username, time, text, image }) {
                 placeholder="Write a comment..."
                 className="post__comment-textarea"
               />
-                          <div className="post__comment-buttons">
+            <div className="post__comment-buttons">
               <button onClick={handleCommentSubmit}>Post</button>
             </div>
             </div>

@@ -3,22 +3,18 @@ import { LOGOUT } from '../action/userAction'
 
 const INITIAL_STATE = {
     user: {
-        token: '',
-        name: "",
-        userId: '',
+        
+        userName: "",
+        customId: '',
         roles: [],
         id: '',
-        imageUrl: '',
+        imageLink: '',
         refreshToken: '',
         phone: '',
         email: '',
     },
-    search: {
-        isSearch: false,
-        searchContent: ''
-    },
-    numberNotifications: 0,
     isAuthenticated: false,
+    token: '',
 }
 
 
@@ -28,42 +24,34 @@ const userReducer = (state = INITIAL_STATE, action) => {
             return {
                 ...state,
                 user: {
-                    imageUrl: action?.payload?.data?.data?.imageUrl,
-                    email: action?.payload?.data?.data?.email,
-                    refreshToken: action?.payload?.data?.data?.refreshToken,
-                    id: action?.payload?.data?.data?.id,
-                    phone: action?.payload?.data?.phone,
-                    token: action?.payload?.data?.data?.token,
-                    name: action?.payload?.data?.data?.name,
-                    userId: action?.payload?.data?.data?.userId ,
-                    roles: action?.payload?.data?.data?.roles
+                    imageLink: action?.payload?.data?.user?.imageLink,
+                    email: action?.payload?.data?.user?.email,
+                    refreshToken: action?.payload?.data?.user?.refreshToken,
+                    id: action?.payload?.data?.user?.id,
+                    phone: action?.payload?.user?.phone,
+                   
+                    userName: action?.payload?.data?.user?.userName,
+                    customId: action?.payload?.data?.user?.customId ,
+                    roles: action?.payload?.data?.user?.roles
                 },
                 isAuthenticated: true,
-                numberNotifications: 0,
-                search: {
-                    isSearch: false,
-                    searchContent: ''
-                }
+                token: action?.payload?.data?.token,
             }
         case LOGOUT:
             return {
                 user: {
-                    token: '',
-                    name: "",
-                    userId: '',
+                    
+                    userName: "",
+                    customId: '',
                     roles: [],
                     id: '',
-                    imageUrl: '',
+                    imageLink: '',
                     refreshToken: '',
                     phone: '',
                     email: '',
                 },
                 isAuthenticated: false,
-                numberNotifications: 0,
-                search: {
-                    isSearch: false,
-                    searchContent: ''
-                }
+                token: '',
             }
 
         default: return state;

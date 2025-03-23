@@ -4,12 +4,15 @@ import { useLocation } from "react-router-dom";
 import Post from "./Post";
 import UserProfileBasic from "./UserProfileBasic";
 import "../styles/CenterSearch.scss"; // Note: Changed from CenterSearch.scss to match your request
+import { useSelector } from "react-redux";
+import { searchUser } from "../services/searchservice";
 
 function CenterSearch() {
   const location = useLocation();
   const [searchResults, setSearchResults] = useState([]);
   const resultsRef = useRef([]); // Reference to track search results
 
+  const token = useSelector((state) => state.user.token)
   // Mock data for demonstration (replace with API calls in production)
   const mockPosts = Array.from({ length: 10 }, (_, index) => ({
     profilePic: "../../public/download.jpg",
@@ -19,12 +22,6 @@ function CenterSearch() {
     image: index % 2 === 0 ? "../../public/download.jpg" : null,
   }));
 
-  const mockUsers = Array.from({ length: 10 }, (_, index) => ({
-    profilePic: "../../public/download.jpg",
-    username: `User ${index + 1}`,
-    userId: `@user${index + 1}`,
-    friendStatus: "none"
-  }));
   const handleFriendAction = (status) => {
     switch (status) {
       case "none":
@@ -43,6 +40,11 @@ function CenterSearch() {
         break;
     }
   };
+
+  const findUser = async (searchValue) => {
+    const data = await searchUser(token, searchValue);
+    setSearchResults(data.data.data.content);
+  }
   useEffect(() => {
     const { searchType, searchValue } = location.state || {};
     
@@ -50,7 +52,7 @@ function CenterSearch() {
       if (searchType === "post") {
         setSearchResults(mockPosts);
       } else if (searchType === "user") {
-        setSearchResults(mockUsers);
+        findUser(searchValue);
       }
     }
   }, [location.state]);
@@ -114,12 +116,12 @@ function CenterSearch() {
               className="scroll-animation"
             >
               <UserProfileBasic
-                profilePic={user.profilePic}
-                username={user.username}
+                imageLink={user.imageLink}
+                userName={user.userName}
                 userId={user.userId}
+                customId={user.customId}
                 friendStatus={user.friendStatus}
                 onFriendAction={handleFriendAction}
-
               />
             </div>
           ))}

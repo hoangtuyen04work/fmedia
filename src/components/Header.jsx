@@ -5,12 +5,19 @@ import { IoIosLogOut } from "react-icons/io";
 import { AiOutlineSearch } from "react-icons/ai";
 import "../styles/Header.scss";
 import NotificationDropdown from "./NotificationDropDown";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../services/authService";
+import { doLogout } from "../redux/action/userAction";
 function Header() {
   const navigate = useNavigate();
   const [searchType, setSearchType] = useState(null); // 'post' hoặc 'user'
   const [searchValue, setSearchValue] = useState(""); // Nội dung người dùng nhập vào
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.user.user.token);
 
   const handleLogout = () => {
+    logout(token);
+    dispatch(doLogout());
     navigate("/auth")
   }
   const handleSearch = () => {
@@ -41,7 +48,6 @@ function Header() {
 
       <div className="header__search">
         <div className="header__search-container">
-          {/* Ô tìm kiếm Post */}
           <input
             type="text"
             placeholder="Search Post"
@@ -51,10 +57,6 @@ function Header() {
             onKeyDown={handleKeyPress}
             value={searchType === "post" ? searchValue : ""}
           />
-
-
-
-          {/* Ô tìm kiếm User */}
           <input
             type="text"
             placeholder="Search User"

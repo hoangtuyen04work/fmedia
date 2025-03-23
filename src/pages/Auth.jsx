@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import '../styles/Auth.scss';
 import { login, signup } from '../services/authService';
+import { useDispatch } from "react-redux";
+import { saveAuth } from '../redux/action/userAction';
+import { useNavigate } from 'react-router-dom';
 
 function Auth() {
   const [isActive, setIsActive] = useState(false);
-  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   // State lưu giá trị input
   const [signupData, setSignupData] = useState({
     userName: '',
@@ -12,7 +17,6 @@ function Auth() {
     email: '',
     customId: '',
     password: '',
-    acceptTerms: false,
   });
 
   const [loginData, setLoginData] = useState({
@@ -28,23 +32,24 @@ function Auth() {
   
   const handleLogin = async (event) => {
     event.preventDefault();
-    console.log("dada", loginData)
-    const data = await login(loginData)
-
-    console.log('Login Data:', data);
+    try {
+      const response = await login(loginData);
+      dispatch(saveAuth(response.data))
+      navigate("/")
+    } catch (error) {
+      console.error("Signup Error:", error.response ? error.response.data : error.message);
+    }
   };
 
   const handleSignup = async (event) => {
-    // console.log("dada", signupData)
-    // const data = await signup(signupData)
     event.preventDefault();
     try {
       const response = await signup(signupData);
-      console.log("Signup Response:", response); // Kiểm tra phản hồi từ server
-  } catch (error) {
+      dispatch(saveAuth(response.data))
+      navigate("/")
+    } catch (error) {
       console.error("Signup Error:", error.response ? error.response.data : error.message);
-  }
-    // console.log('Login Data:', data);
+    }
   };
 
   return (

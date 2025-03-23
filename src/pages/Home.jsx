@@ -1,9 +1,3 @@
-import React, { useState } from "react"
-import { Navigate, NavLink } from "react-router-dom";
-import { doLogout } from "../redux/action/userAction";
-import { useNavigate } from "react-router-dom"
-import { useSelector } from "react-redux";
-
 import "../styles/Home.scss"
 import LeftBar from "../components/LeftBar";
 import RightBar from "../components/RightBar";
