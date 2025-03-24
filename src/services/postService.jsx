@@ -34,6 +34,14 @@ const getMyPost = (token, page, size) => {
     });
 }
 
+const getUserPosts = (token, customId, page, size) => {
+    return  api.get(`/post/${customId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}
+
 const like = (token, request) => {
     return  api.post(`/reaction`, request,  {
         headers: {
@@ -50,4 +58,4 @@ const unLike = (token, request) => {
     });
 }
 
-export { newPost, getMyPost, like, unLike};
+export { newPost, getMyPost, like, unLike, getUserPosts};

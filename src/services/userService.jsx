@@ -16,5 +16,17 @@ const getMyProfile = async (token) => {
 };
 
 
-
-export { getMyProfile };
+const getUserProfileByCustomId = async (token, customId) => {
+    try {
+        const response = await api.get(`/user/profile?customId=${customId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response
+    } catch (error) {
+        console.error("Error fetching profile:", error.response?.data || error.message);
+        throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+    }
+};
+export { getMyProfile, getUserProfileByCustomId };
