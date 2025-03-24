@@ -7,12 +7,7 @@ function UserProfileBasic({imageLink, userName, customId, userId,  friendStatus,
 }) {
   const navigate = useNavigate();
   const handleProfileClick = () => {
-    navigate("/search", { 
-      state: { 
-        searchType, 
-        searchValue 
-      } 
-    });
+    navigate(`/profile?customId=${customId}`);
   };
 
   const handleFriendActionClick = (e) => {

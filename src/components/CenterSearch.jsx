@@ -47,7 +47,6 @@ function CenterSearch() {
   }
   useEffect(() => {
     const { searchType, searchValue } = location.state || {};
-    
     if (searchType && searchValue) {
       if (searchType === "post") {
         setSearchResults(mockPosts);

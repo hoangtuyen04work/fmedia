@@ -2,59 +2,79 @@ import React, { useState, useEffect, useRef } from "react";
 import "../styles/CenterProfile.scss";
 import Post from "./Post";
 import { useSelector } from "react-redux";
-import { getMyProfile } from "../services/userService";
-import { getMyPost } from "../services/postService";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getMyProfile, getUserProfileByCustomId } from "../services/userService";
+import { getMyPost, getUserPosts } from "../services/postService";
+import { sendFriendRequest, cancelFriendRequest, acceptFriendRequest, unfriend } from "../services/friendService";
 
 function CenterProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [posts, setPosts] = useState([]);
   const postsRef = useRef([]);
   const token = useSelector((state) => state.user.token);
+  const currentUser = useSelector((state) => state.user.user);
   const [profileData, setProfileData] = useState({});
-  const [tempData, setTempData] = useState({ ...profileData });
+  const [tempData, setTempData] = useState({});
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [friendStatus, setFriendStatus] = useState(null);
   const size = 10;
   const loaderRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const handleEdit = () => {
-    setIsEditing(true);
-    setTempData({ ...profileData });
-  };
+  const searchParams = new URLSearchParams(location.search); // Sửa ở đây
+  const customId = searchParams.get("customId");
+  const isOwnProfile = !customId || customId === currentUser?.customId;
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        if (isOwnProfile) {
+          const data = await getMyProfile(token);
+          setProfileData(data.data);
+          setTempData(data.data);
+        } else {
+          const data = await getUserProfileByCustomId(token, customId);
+          setProfileData(data.data);
+          setFriendStatus(data.data.friendStatus);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        navigate("/profile");
+      }
+    };
+    fetchProfile();
+  }, [token, customId, isOwnProfile, searchParams]);
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    setTempData({ ...profileData });
-  };
+// Reset posts and fetch new posts when customId or isOwnProfile changes
+  useEffect(() => {
+    setPosts([]);
+    setPage(0);
+    setHasMore(true);
+    setLoading(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setProfileData({ ...tempData });
-    setIsEditing(false);
-  };
-
-  const handleChange = (e) => {
-    setTempData({
-      ...tempData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempData({
-          ...tempData,
-          avatar: reader.result,
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
+    const fetchPosts = async (currentPage) => {
+      if (!hasMore || loading) return;
+      setLoading(true);
+      try {
+        const data = isOwnProfile
+          ? await getMyPost(token, currentPage, size)
+          : await getUserPosts(token, customId, currentPage, size);
+        const newPosts = data.data.data.content;
+        if (newPosts.length < size) {
+          setHasMore(false);
+        }
+        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        setHasMore(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts(0); // Fetch page 0 immediately when profile changes
+  }, [token, customId, isOwnProfile]); // Dependency array includes customId and isOwnProfile
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -78,107 +98,125 @@ function CenterProfile() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          setPage((prevPage) => {
-            const newPage = prevPage + 1;
-            return newPage;
-          });
-          if (loaderRef.current) {
-            observer.unobserve(loaderRef.current);
-          }
+          setPage((prev) => prev + 1);
         }
       },
       { threshold: 0.1 }
     );
-  
-    if (loaderRef.current && !loading) {
+
+    if (loaderRef.current) {
       observer.observe(loaderRef.current);
     }
-  
+
     return () => {
       if (loaderRef.current) {
         observer.unobserve(loaderRef.current);
       }
     };
-  }, [hasMore, loading]); // Chạy lại khi hasMore hoặc loading thay đổi
+  }, [hasMore, loading]);
 
-  const fetchMyProfile = async () => {
-    const data = await getMyProfile(token);
-    setProfileData(data.data);
-  };
-
-  const fetchMyPost = async (currentPage) => {
-    if (!hasMore || loading) return;
-    setLoading(true);
+  const handleFriendAction = async (action) => {
     try {
-      const data = await getMyPost(token, currentPage, size);
-      const newPosts = data.data.data.content;
-      if (newPosts.length < size) {
-        setHasMore(false);
+      switch (action) {
+        case "add":
+          await sendFriendRequest(token, customId);
+          setFriendStatus("requested");
+          break;
+        case "cancel":
+          await cancelFriendRequest(token, customId);
+          setFriendStatus(null);
+          break;
+        case "accept":
+          await acceptFriendRequest(token, customId);
+          setFriendStatus("friends");
+          break;
+        case "unfriend":
+          await unfriend(token, customId);
+          setFriendStatus(null);
+          break;
+        default:
+          break;
       }
-      setPosts((prevPosts) => [...prevPosts, ...newPosts]);
     } catch (error) {
-      console.error("Error fetching posts:", error);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
+      console.error("Friend action failed:", error);
     }
   };
-  useEffect(() => {
-    fetchMyProfile();
-  }, []);
 
-  useEffect(() => {
-    fetchMyPost(page);
-  }, [page]);
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
 
-  return (
-    <div className="center-profile">
-      {!isEditing ? (
-        <div className="profile-display">
-          <div className="avatar-container">
-            <img src={profileData.imageLink} alt="User avatar" className="avatar" />
-          </div>
-          <div className="profile-field">
-            <span className="label">Bio:</span>
-            <span className="value">{profileData.bio}</span>
-          </div>
-          <div className="profile-field">
-            <span className="label">CustomId Id:</span>
-            <span className="value">{profileData.customId}</span>
-          </div>
-          <div className="profile-field">
-            <span className="label">User Name:</span>
-            <span className="value">{profileData.userName}</span>
-          </div>
-          <div className="profile-field">
-            <span className="label">Email:</span>
-            <span className="value">{profileData.email}</span>
-          </div>
-          <div className="profile-field">
-            <span className="label">Phone:</span>
-            <span className="value">{profileData.phone}</span>
-          </div>
-          <div className="profile-field">
-            <span className="label">Date of birth:</span>
-            <span className="value">{profileData.dob}</span>
-          </div>
-          <div className="profile-field">
-            <span className="label">Creation date:</span>
-            <span className="value">{profileData.creationDate}</span>
-          </div>
-          <div className="profile-field">
-            <span className="label">Address:</span>
-            <span className="value">{profileData.address}</span>
-          </div>
-          <button className="edit-btn" onClick={handleEdit}>
-            Edit Profile
+  const handleCancel = () => {
+    setIsEditing(false);
+    setTempData({ ...profileData });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setProfileData({ ...tempData });
+    setIsEditing(false);
+    // TODO: Gọi API để update profile nếu cần
+  };
+
+  const handleChange = (e) => {
+    setTempData({
+      ...tempData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTempData({
+          ...tempData,
+          imageLink: reader.result,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const renderFriendButton = () => {
+    if (isOwnProfile) return null;
+
+    switch (friendStatus) {
+      case "friends":
+        return (
+          <button className="friend-btn unfriend" onClick={() => handleFriendAction("unfriend")}>
+            Unfriend
           </button>
-        </div>
-      ) : (
+        );
+      case "pending":
+        return (
+          <button className="friend-btn accept" onClick={() => handleFriendAction("accept")}>
+            Accept Friend Request
+          </button>
+        );
+      case "requested":
+        return (
+          <button className="friend-btn cancel" onClick={() => handleFriendAction("cancel")}>
+            Cancel Request
+          </button>
+        );
+      default:
+        return (
+          <button className="friend-btn add" onClick={() => handleFriendAction("add")}>
+            Add Friend
+          </button>
+        );
+    }
+  };
+
+  const renderProfileContent = () => {
+    if (isOwnProfile && isEditing) {
+      return (
         <form className="profile-form" onSubmit={handleSubmit}>
           <div className="form-group avatar-edit">
             <div className="avatar-preview">
-              <img src={tempData.avatar} alt="Avatar preview" className="avatar" />
+              <img src={tempData.imageLink} alt="Avatar preview" className="avatar" />
               <input
                 type="file"
                 id="avatar"
@@ -190,20 +228,15 @@ function CenterProfile() {
           </div>
           <div className="form-group">
             <label htmlFor="bio">Bio:</label>
-            <textarea
-              id="bio"
-              name="bio"
-              value={tempData.bio}
-              onChange={handleChange}
-            />
+            <textarea id="bio" name="bio" value={tempData.bio || ""} onChange={handleChange} />
           </div>
           <div className="form-group">
-            <label htmlFor="name">Name:</label>
+            <label htmlFor="userName">User Name:</label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={tempData.name}
+              id="userName"
+              name="userName"
+              value={tempData.userName || ""}
               onChange={handleChange}
             />
           </div>
@@ -213,7 +246,7 @@ function CenterProfile() {
               type="email"
               id="email"
               name="email"
-              value={tempData.email}
+              value={tempData.email || ""}
               onChange={handleChange}
             />
           </div>
@@ -223,7 +256,7 @@ function CenterProfile() {
               type="text"
               id="phone"
               name="phone"
-              value={tempData.phone}
+              value={tempData.phone || ""}
               onChange={handleChange}
             />
           </div>
@@ -233,17 +266,17 @@ function CenterProfile() {
               type="date"
               id="dob"
               name="dob"
-              value={tempData.dob}
+              value={tempData.dob || ""}
               onChange={handleChange}
             />
           </div>
           <div className="form-group">
-            <label htmlFor="location">Location:</label>
+            <label htmlFor="address">Address:</label>
             <input
               type="text"
-              id="location"
-              name="location"
-              value={tempData.location}
+              id="address"
+              name="address"
+              value={tempData.address || ""}
               onChange={handleChange}
             />
           </div>
@@ -256,7 +289,61 @@ function CenterProfile() {
             </button>
           </div>
         </form>
-      )}
+      );
+    }
+
+    return (
+      <div className="profile-display">
+        <div className="avatar-container">
+          <img src={profileData.imageLink} alt="User avatar" className="avatar" />
+        </div>
+        <div className="profile-field">
+          <span className="label">Bio:</span>
+          <span className="value">{profileData.bio}</span>
+        </div>
+        <div className="profile-field">
+          <span className="label">CustomId:</span>
+          <span className="value">{profileData.customId}</span>
+        </div>
+        <div className="profile-field">
+          <span className="label">User Name:</span>
+          <span className="value">{profileData.userName}</span>
+        </div>
+        {isOwnProfile && (
+          <>
+            <div className="profile-field">
+              <span className="label">Email:</span>
+              <span className="value">{profileData.email}</span>
+            </div>
+            <div className="profile-field">
+              <span className="label">Phone:</span>
+              <span className="value">{profileData.phone}</span>
+            </div>
+            <div className="profile-field">
+              <span className="label">Date of birth:</span>
+              <span className="value">{profileData.dob}</span>
+            </div>
+            <div className="profile-field">
+              <span className="label">Creation date:</span>
+              <span className="value">{profileData.creationDate}</span>
+            </div>
+            <div className="profile-field">
+              <span className="label">Address:</span>
+              <span className="value">{profileData.address}</span>
+            </div>
+            <button className="edit-btn" onClick={handleEdit}>
+              Edit Profile
+            </button>
+          </>
+        )}
+        {renderFriendButton()}
+      </div>
+    );
+  };
+
+  return (
+    <div className="center-profile">
+      {renderProfileContent()}
       {posts.map((post, index) => (
         <div
           key={index}
