@@ -11,5 +11,13 @@ const searchUser = (token, customId) => {
 }
 
 
+const searchPost = (token, keyWord, currentPage, size) => {
+    return  api.get(`/post/search?keyWord=${keyWord}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}
 
-export { searchUser};
+
+export { searchUser, searchPost};

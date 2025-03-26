@@ -1,62 +1,112 @@
-// src/components/SearchCenter.jsx
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Post from "./Post";
 import UserProfileBasic from "./UserProfileBasic";
-import "../styles/CenterSearch.scss"; // Note: Changed from CenterSearch.scss to match your request
+import "../styles/CenterSearch.scss";
 import { useSelector } from "react-redux";
-import { searchUser } from "../services/searchservice";
+import { searchPost, searchUser } from "../services/searchservice";
 
 function CenterSearch() {
   const location = useLocation();
   const [searchResults, setSearchResults] = useState([]);
-  const resultsRef = useRef([]); // Reference to track search results
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const resultsRef = useRef([]);
+  const observerRef = useRef(null);
+  const lastElementRef = useRef(null);
 
-  const token = useSelector((state) => state.user.token)
-  // Mock data for demonstration (replace with API calls in production)
-  const mockPosts = Array.from({ length: 10 }, (_, index) => ({
-    profilePic: "../../public/download.jpg",
-    username: `User ${index + 1}`,
-    time: `${index + 1} hrs ago`,
-    text: `This is a sample post ${index + 1} containing search term`,
-    image: index % 2 === 0 ? "../../public/download.jpg" : null,
-  }));
+  const token = useSelector((state) => state.user.token);
 
   const handleFriendAction = (status) => {
     switch (status) {
       case "none":
         console.log("Add friend clicked!");
-        // Logic kết bạn
         break;
       case "pending":
         console.log("Cancel friend request clicked!");
-        // Logic hủy lời mời
         break;
       case "friends":
         console.log("Unfriend clicked!");
-        // Logic hủy kết bạn
         break;
       default:
         break;
     }
   };
 
-  const findUser = async (searchValue) => {
-    const data = await searchUser(token, searchValue);
-    setSearchResults(data.data.data.content);
-  }
+  const findUser = async (searchValue, pageNum) => {
+    setIsLoading(true);
+    try {
+      const data = await searchUser(token, searchValue, pageNum);
+      const newResults = data.data.data.content;
+      setSearchResults((prev) => [...prev, ...newResults]);
+      setHasMore(newResults.length > 0);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+    setIsLoading(false);
+  };
+
+  const findPost = async (searchValue, pageNum) => {
+    setIsLoading(true);
+    try {
+      const data = await searchPost(token, searchValue, pageNum);
+      console.log("data", data, pageNum)
+      const newResults = data.data.data.content;
+      setSearchResults((prev) => [...prev, ...newResults]);
+      setHasMore(newResults.length > 0);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+    setIsLoading(false);
+  };
+
+  // Reset search when search parameters change
   useEffect(() => {
     const { searchType, searchValue } = location.state || {};
     if (searchType && searchValue) {
+      setSearchResults([]);
+      setPage(0);
+      setHasMore(true);
       if (searchType === "post") {
-        setSearchResults(mockPosts);
+        findPost(searchValue, 0);
       } else if (searchType === "user") {
-        findUser(searchValue);
+        findUser(searchValue, 0);
       }
     }
   }, [location.state]);
 
-  // Intersection Observer for scroll animation
+
+  const lastElementObserver = useCallback(
+    (node) => {
+      if (isLoading) return;
+      if (observerRef.current) observerRef.current.disconnect();
+
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prev) => prev + 1);
+        }
+      });
+
+      if (node) observerRef.current.observe(node);
+    },
+    [isLoading, hasMore]
+  );
+
+  // Load more results when page changes
+  useEffect(() => {
+    const { searchType, searchValue } = location.state || {};
+    if (page > 0 && searchType && searchValue) {
+      console.log("dfsdf", page);
+      if (searchType === "post") {
+        findPost(searchValue, page);
+      } else if (searchType === "user") {
+        findUser(searchValue, page);
+      }
+    }
+  }, [page]);
+
+  // Animation observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -81,54 +131,107 @@ function CenterSearch() {
   return (
     <div className="search-center">
       <h2 className="search-center__title">
-        {searchType 
+        {searchType
           ? `Search Results for "${searchValue}" in ${searchType}s`
           : "No Search Performed"}
       </h2>
-      
+
       {searchType === "post" && searchResults.length > 0 && (
         <div className="search-center__results">
-          {searchResults.map((post, index) => (
-            <div
-              key={index}
-              ref={(el) => (resultsRef.current[index] = el)}
-              className="scroll-animation"
-            >
-              <Post
-                profilePic={post.profilePic}
-                username={post.username}
-                time={post.time}
-                text={post.text}
-                image={post.image}
-              />
-            </div>
-          ))}
+          {searchResults.map((post, index) => {
+            if (searchResults.length === index + 1) {
+              return (
+                <div
+                  key={post.id}
+                  ref={(el) => {
+                    resultsRef.current[index] = el;
+                    lastElementRef.current = el;
+                    lastElementObserver(el);
+                  }}
+                  className="scroll-animation"
+                >
+                  <Post
+                    avatarLink={post.avatarLink}
+                    customId={post.customId}
+                    userName={post.userName}
+                    creationDate={post.creationDate}
+                    content={post.content}
+                    imageLink={post.imageLink}
+                  />
+                </div>
+              );
+            }
+            return (
+              <div
+                key={post.id}
+                ref={(el) => (resultsRef.current[index] = el)}
+                className="scroll-animation"
+              >
+                <Post
+                  avatarLink={post.avatarLink}
+                  customId={post.customId}
+                  userName={post.userName}
+                  creationDate={post.creationDate}
+                  content={post.content}
+                  imageLink={post.imageLink}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
 
       {searchType === "user" && searchResults.length > 0 && (
         <div className="search-center__results">
-          {searchResults.map((user, index) => (
-            <div
-              key={index}
-              ref={(el) => (resultsRef.current[index] = el)}
-              className="scroll-animation"
-            >
-              <UserProfileBasic
-                imageLink={user.imageLink}
-                userName={user.userName}
-                userId={user.userId}
-                customId={user.customId}
-                friendStatus={user.friendStatus}
-                onFriendAction={handleFriendAction}
-              />
-            </div>
-          ))}
+          {searchResults.map((user, index) => {
+            if (searchResults.length === index + 1) {
+              return (
+                <div
+                  key={index}
+                  ref={(el) => {
+                    resultsRef.current[index] = el;
+                    lastElementRef.current = el;
+                    lastElementObserver(el);
+                  }}
+                  className="scroll-animation"
+                >
+                  <UserProfileBasic
+                    imageLink={user.imageLink}
+                    userName={user.userName}
+                    userId={user.userId}
+                    customId={user.customId}
+                    friendStatus={user.friendStatus}
+                    onFriendAction={handleFriendAction}
+                  />
+                </div>
+              );
+            }
+            return (
+              <div
+                key={index}
+                ref={(el) => (resultsRef.current[index] = el)}
+                className="scroll-animation"
+              >
+                <UserProfileBasic
+                  imageLink={user.imageLink}
+                  userName={user.userName}
+                  userId={user.userId}
+                  customId={user.customId}
+                  friendStatus={user.friendStatus}
+                  onFriendAction={handleFriendAction}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {searchResults.length === 0 && searchType && (
+      {isLoading && <p className="search-center__loading">Loading...</p>}
+      {searchResults.length === 0 && searchType && !isLoading && (
         <p className="search-center__no-results">No results found</p>
+      )}
+      {!hasMore && searchResults.length > 0 && (
+        <p className="search-center__end">No more results</p>
       )}
     </div>
   );
