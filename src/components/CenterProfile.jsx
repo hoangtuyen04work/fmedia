@@ -27,54 +27,60 @@ function CenterProfile() {
   const searchParams = new URLSearchParams(location.search); // Sửa ở đây
   const customId = searchParams.get("customId");
   const isOwnProfile = !customId || customId === currentUser?.customId;
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        if (isOwnProfile) {
-          const data = await getMyProfile(token);
-          setProfileData(data.data);
-          setTempData(data.data);
-        } else {
-          const data = await getUserProfileByCustomId(token, customId);
-          setProfileData(data.data);
-          setFriendStatus(data.data.friendStatus);
-        }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        navigate("/profile");
-      }
-    };
-    fetchProfile();
-  }, [token, customId, isOwnProfile, searchParams]);
 
-// Reset posts and fetch new posts when customId or isOwnProfile changes
+
+  const fetchProfile = async () => {
+    try {
+      if (isOwnProfile) {
+        const data = await getMyProfile(token);
+        setProfileData(data.data);
+        setTempData(data.data);
+      } else {
+        const data = await getUserProfileByCustomId(token, customId);
+        setProfileData(data.data);
+        setFriendStatus(data.data.friendStatus);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      navigate("/profile");
+    }
+  };
+  const fetchPosts = async (currentPage) => {
+    if (!hasMore || loading) return;
+    setLoading(true);
+    try {
+      const data = isOwnProfile
+        ? await getMyPost(token, currentPage, size)
+        : await getUserPosts(token, customId, currentPage, size);
+      console.log(data)
+      const newPosts = data.data.data.content;
+      if (newPosts.length < size) {
+        setHasMore(false);
+      }
+      setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     setPosts([]);
     setPage(0);
     setHasMore(true);
     setLoading(false);
+    fetchPosts(page);
+  }, [token, customId, isOwnProfile]);
 
-    const fetchPosts = async (currentPage) => {
-      if (!hasMore || loading) return;
-      setLoading(true);
-      try {
-        const data = isOwnProfile
-          ? await getMyPost(token, currentPage, size)
-          : await getUserPosts(token, customId, currentPage, size);
-        const newPosts = data.data.data.content;
-        if (newPosts.length < size) {
-          setHasMore(false);
-        }
-        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-        setHasMore(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPosts(0); // Fetch page 0 immediately when profile changes
-  }, [token, customId, isOwnProfile]); // Dependency array includes customId and isOwnProfile
+  useEffect(() => {
+    fetchProfile();
+  }, [isOwnProfile]);
+  useEffect(() => {
+    fetchPosts(page);
+  }, [page]); // Gọi khi page thay đổi
+  
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -97,23 +103,24 @@ function CenterProfile() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          setPage((prev) => prev + 1);
+        if (entries[0].isIntersecting) {
+          setPage((prev) => (hasMore && !loading ? prev + 1 : prev));
         }
       },
       { threshold: 0.1 }
     );
-
+  
     if (loaderRef.current) {
       observer.observe(loaderRef.current);
     }
-
+  
     return () => {
       if (loaderRef.current) {
         observer.unobserve(loaderRef.current);
       }
     };
   }, [hasMore, loading]);
+  
 
   const handleFriendAction = async (action) => {
     try {

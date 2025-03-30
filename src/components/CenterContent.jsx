@@ -3,14 +3,18 @@ import Post from "./Post";
 import "../styles/CenterContent.scss";
 import { IoImageOutline, IoClose } from "react-icons/io5"; // Added IoClose for the remove button
 import { useSelector } from "react-redux";
-import { newPost } from "../services/postService";
+import { newPost, getHome } from "../services/postService";
 function CenterContent() {
   const postsRef = useRef([]);
+  const loaderRef = useRef(null); // Thêm loader để theo dõi khi chạm cuối danh sách
   const [posts, setPosts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newPostText, setNewPostText] = useState("");
   const [newPostImage, setNewPostImage] = useState(null);
   const token = useSelector((state) => state.user.token);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true); // Kiểm tra còn dữ liệu hay không
 
   useEffect(() => {
     const initialPosts = Array.from({ length: 20 }, (_, index) => ({
@@ -25,25 +29,44 @@ function CenterContent() {
     setPosts(initialPosts);
   }, []);
 
+  useEffect(() => {
+    getData();
+  }, [page]);
+
+  const getData = async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    const data = await getHome(token, page, 10);
+    console.log(data.data)
+    if (data.data.data.totalPages === page) {
+      setHasMore(false); 
+    } else {
+      setPosts((prev) => [...prev, ...data.data.data.content]);
+    }
+    setLoading(false);
+  };
+
   // Intersection Observer for scroll animation
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("show");
-          }
-        });
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage((prev) => prev + 1);
+        }
       },
-      { threshold: 0.3 }
+      { threshold: 1.0 }
     );
 
-    postsRef.current.forEach((post) => {
-      if (post) observer.observe(post);
-    });
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
 
-    return () => observer.disconnect();
-  }, [posts]);
+    return () => {
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current);
+      }
+    };
+  }, [hasMore, loading]);
 
   // Handle image upload
   const handleImageUpload = (e) => {
@@ -114,6 +137,8 @@ function CenterContent() {
             />
           </div>
         ))}
+                {hasMore && <div ref={loaderRef} className="loading-spinner">Loading...</div>}
+
       </div>
 
       {/* Modal for creating a new post */}

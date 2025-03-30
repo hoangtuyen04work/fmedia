@@ -27,15 +27,24 @@ const newPost = async (token, newPostData) => {
 };
 
 const getMyPost = (token, page, size) => {
-    return  api.get(`/post/my`, {
+    return  api.get(`/post/my?page=${page}&size=${size}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
 }
 
+const getHome = (token, page, size) => {
+    return  api.get(`/post/home?page=${page}&size=${size}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}
+
+
 const getUserPosts = (token, customId, page, size) => {
-    return  api.get(`/post/${customId}`, {
+    return  api.get(`/post/${customId}?page=${page}&size=${size}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -58,4 +67,4 @@ const unLike = (token, request) => {
     });
 }
 
-export { newPost, getMyPost, like, unLike, getUserPosts};
+export { newPost, getMyPost, like, unLike, getUserPosts, getHome};

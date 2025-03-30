@@ -2,8 +2,8 @@ import api from "../api/custom-axios";
 
 
 
-const searchUser = (token, customId) => {
-    return  api.get(`/search/user?customId=${customId}`, {
+const searchUser = (token, customId, pageNum, size) => {
+    return  api.get(`/search/user?customId=${customId}&page=${pageNum}&size=${size}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },

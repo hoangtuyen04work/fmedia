@@ -5,6 +5,7 @@ import UserProfileBasic from "./UserProfileBasic";
 import "../styles/CenterSearch.scss";
 import { useSelector } from "react-redux";
 import { searchPost, searchUser } from "../services/searchservice";
+import { acceptFriendRequest, cancelFriendRequest, sendFriendRequest } from "../services/friendService";
 
 function CenterSearch() {
   const location = useLocation();
@@ -15,21 +16,56 @@ function CenterSearch() {
   const resultsRef = useRef([]);
   const observerRef = useRef(null);
   const lastElementRef = useRef(null);
-
+  const size = 10;
   const token = useSelector((state) => state.user.token);
 
-  const handleFriendAction = (status) => {
+  const handleFriendAction = async (status, friendId) => {
     switch (status) {
-      case "none":
-        console.log("Add friend clicked!");
-        break;
-      case "pending":
-        console.log("Cancel friend request clicked!");
-        break;
-      case "friends":
-        console.log("Unfriend clicked!");
-        break;
+      case "PENDING":
+        try {
+          const data = await acceptFriendRequest(token, friendId);
+          if (data.data.data === true) {
+            setSearchResults((prevResults) =>
+              prevResults.map((user) =>
+                user.userId === friendId
+                  ? { ...user, friendship: "ACCEPTED" }
+                  : user
+              )
+            );
+          }
+        } catch (error) {
+          console.error("Error sending friend request:", error);
+        }        break;
+      case "ACCEPTED":
+        try {
+          const data = await cancelFriendRequest(token, friendId);
+          if (data.data.data === true) {
+            setSearchResults((prevResults) =>
+              prevResults.map((user) =>
+                user.userId === friendId
+                  ? { ...user, friendship: null }
+                  : user
+              )
+            );
+          }
+        } catch (error) {
+          console.error("Error sending friend request:", error);
+        }        break;
       default:
+        try {
+          const data = await sendFriendRequest(token, friendId);
+          if (data.data.data === true) {
+            setSearchResults((prevResults) =>
+              prevResults.map((user) =>
+                user.userId === friendId
+                  ? { ...user, friendship: "PENDING" }
+                  : user
+              )
+            );
+          }
+        } catch (error) {
+          console.error("Error sending friend request:", error);
+        }
         break;
     }
   };
@@ -37,10 +73,10 @@ function CenterSearch() {
   const findUser = async (searchValue, pageNum) => {
     setIsLoading(true);
     try {
-      const data = await searchUser(token, searchValue, pageNum);
+      const data = await searchUser(token, searchValue, pageNum, size);
       const newResults = data.data.data.content;
       setSearchResults((prev) => [...prev, ...newResults]);
-      setHasMore(newResults.length > 0);
+      setHasMore(newResults.length >= size);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -51,7 +87,6 @@ function CenterSearch() {
     setIsLoading(true);
     try {
       const data = await searchPost(token, searchValue, pageNum);
-      console.log("data", data, pageNum)
       const newResults = data.data.data.content;
       setSearchResults((prev) => [...prev, ...newResults]);
       setHasMore(newResults.length > 0);
@@ -61,50 +96,21 @@ function CenterSearch() {
     setIsLoading(false);
   };
 
-  // Reset search when search parameters change
   useEffect(() => {
     const { searchType, searchValue } = location.state || {};
-    if (searchType && searchValue) {
+    if (!searchType || !searchValue) return;
+  
+    if (page === 0) {
       setSearchResults([]);
-      setPage(0);
       setHasMore(true);
-      if (searchType === "post") {
-        findPost(searchValue, 0);
-      } else if (searchType === "user") {
-        findUser(searchValue, 0);
-      }
     }
-  }, [location.state]);
-
-
-  const lastElementObserver = useCallback(
-    (node) => {
-      if (isLoading) return;
-      if (observerRef.current) observerRef.current.disconnect();
-
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          setPage((prev) => prev + 1);
-        }
-      });
-
-      if (node) observerRef.current.observe(node);
-    },
-    [isLoading, hasMore]
-  );
-
-  // Load more results when page changes
-  useEffect(() => {
-    const { searchType, searchValue } = location.state || {};
-    if (page > 0 && searchType && searchValue) {
-      console.log("dfsdf", page);
-      if (searchType === "post") {
-        findPost(searchValue, page);
-      } else if (searchType === "user") {
-        findUser(searchValue, page);
-      }
+  
+    if (searchType === "post") {
+      findPost(searchValue, page);
+    } else if (searchType === "user") {
+      findUser(searchValue, page);
     }
-  }, [page]);
+  }, [location.state, page]);
 
   // Animation observer
   useEffect(() => {
@@ -125,6 +131,24 @@ function CenterSearch() {
 
     return () => observer.disconnect();
   }, [searchResults]);
+
+  const lastElementObserver = useCallback(
+  (node) => {
+    if (isLoading || !hasMore) return; // Thêm kiểm tra hasMore
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage((prev) => prev + 1);
+      }
+    });
+
+    if (node) observerRef.current.observe(node);
+  },
+  [isLoading, hasMore]
+);
+
+
 
   const { searchType, searchValue } = location.state || {};
 
@@ -200,7 +224,7 @@ function CenterSearch() {
                     userName={user.userName}
                     userId={user.userId}
                     customId={user.customId}
-                    friendStatus={user.friendStatus}
+                    friendship={user.friendship}
                     onFriendAction={handleFriendAction}
                   />
                 </div>
@@ -217,7 +241,7 @@ function CenterSearch() {
                   userName={user.userName}
                   userId={user.userId}
                   customId={user.customId}
-                  friendStatus={user.friendStatus}
+                  friendship={user.friendship}
                   onFriendAction={handleFriendAction}
                 />
               </div>
