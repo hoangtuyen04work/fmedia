@@ -3,7 +3,7 @@ import api from "../api/custom-axios";
 
 
 const getMyFriend = (token) => {
-    return  api.get(`/friendship/all`, {
+    return  api.get(`/friendship/all/accepted`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -18,29 +18,31 @@ const unfriend = (token) => {
     });
 }
 
-const acceptFriendRequest = (token) => {
-    return  api.get(`/friendship/all`, {
+const acceptFriendRequest = (token, friendId) => {
+    return  api.put(`/friendship/accept`, friendId, {
         headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'text/plain' // Explicitly set content type
         },
     });
 }
 
-const cancelFriendRequest = (token) => {
-    return  api.get(`/friendship/all`, {
+const cancelFriendRequest = (token, friendId) => {
+    return  api.delete(`/friendship/delete`, friendId, {
         headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'text/plain' // Explicitly set content type
         },
     });
 }
 
-const sendFriendRequest = (token) => {
-    return  api.get(`/friendship/all`, {
+const sendFriendRequest = (token, friendId) => {
+    return api.post(`/friendship/add`, friendId, {
         headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'text/plain' // Explicitly set content type
         },
     });
 }
-
 
 export { getMyFriend, sendFriendRequest, cancelFriendRequest, acceptFriendRequest, unfriend};
