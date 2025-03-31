@@ -35,6 +35,7 @@ function Auth() {
     try {
       const response = await login(loginData);
       dispatch(saveAuth(response.data))
+      console.log(response);
       navigate("/")
     } catch (error) {
       console.error("Signup Error:", error.response ? error.response.data : error.message);
@@ -46,6 +47,7 @@ function Auth() {
     try {
       const response = await signup(signupData);
       dispatch(saveAuth(response.data))
+      console.log(response);
       navigate("/")
     } catch (error) {
       console.error("Signup Error:", error.response ? error.response.data : error.message);

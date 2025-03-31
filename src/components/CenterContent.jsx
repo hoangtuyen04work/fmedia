@@ -16,18 +16,6 @@ function CenterContent() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true); // Kiểm tra còn dữ liệu hay không
 
-  useEffect(() => {
-    const initialPosts = Array.from({ length: 20 }, (_, index) => ({
-      avatarLink: "../../public/download.jpg",
-      userName: `User ${index + 1}`,
-      creationDate: `${index + 1} hrs ago`,
-      content: `This is post number ${index + 1}. Enjoying the day!`,
-      imageLink: index % 2 === 0 ? "../../public/download.jpg" : null,
-      customId: "12312",
-      modifiedDate: ""
-    }));
-    setPosts(initialPosts);
-  }, []);
 
   useEffect(() => {
     getData();
@@ -37,12 +25,12 @@ function CenterContent() {
     if (loading || !hasMore) return;
     setLoading(true);
     const data = await getHome(token, page, 10);
-    console.log(data.data)
     if (data.data.data.totalPages === page) {
       setHasMore(false); 
-    } else {
-      setPosts((prev) => [...prev, ...data.data.data.content]);
     }
+    console.log(data.data.data.content)
+    setPosts((prev) => [...prev, ...data.data.data.content]);
+
     setLoading(false);
   };
 
@@ -68,7 +56,6 @@ function CenterContent() {
     };
   }, [hasMore, loading]);
 
-  // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     setNewPostImage(file);
@@ -78,18 +65,16 @@ function CenterContent() {
   const handleImageRemove = () => {
     setNewPostImage(null);
   };
-  // avaterLink, userName, creationDate, content, imageLink
-  // Handle post submission
+
+
   const handlePostSubmit = async () => {
     if (newPostText || newPostImage) {
       const newPostData = {
         content: newPostText,
         imageFile: newPostImage,
       };
-
       const data = await newPost(token, newPostData);
       console.log("data", data);
-
       setPosts([newPost, ...posts]);
       setNewPostText("");
       setNewPostImage(null);

@@ -8,7 +8,7 @@ function RightBar() {
   const [selectedContact, setSelectedContact] = useState(null);
   const token = useSelector((state) => state.user.token);
   const [friends, setFriends] = useState([]);
-  
+
   useEffect(() => {
     fetchAllFriend();
   }, [])

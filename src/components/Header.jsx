@@ -14,7 +14,6 @@ function Header() {
   const [searchValue, setSearchValue] = useState(""); // Nội dung người dùng nhập vào
   const dispatch = useDispatch();
   const token = useSelector((state) => state.user.user.token);
-
   const handleLogout = () => {
     logout(token);
     dispatch(doLogout());

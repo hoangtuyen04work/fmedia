@@ -7,7 +7,6 @@
     padding: 0.5rem;
     background: #fff;
     border-radius: 8px;
-
   }
 
   &__pic {
@@ -17,7 +16,6 @@
     object-fit: cover;
     margin-right: 0.75rem;
     cursor: pointer;
-    justify-content: space-between; // Thêm justify-content
     &:hover {
       background-color: #dfe4e8;
     }
@@ -26,10 +24,8 @@
   &__info {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; // Cho phép info chiếm không gian còn lại
+    flex-grow: 1;
     cursor: pointer;
-    justify-content: space-between; // Thêm justify-content
-
   }
 
   &__name {
@@ -37,26 +33,50 @@
     color: #333;
     font-size: 1rem;
     cursor: pointer;
-    justify-content: space-between; // Thêm justify-content
   }
 
   &__id {
     color: #666;
     font-size: 0.875rem;
     cursor: pointer;
-    justify-content: space-between; // Thêm justify-content
   }
 
-  &__friend-status {
+  &__friend-actions {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    gap: 0.5rem; // Khoảng cách giữa các nút trong trường hợp WAITING
+  }
+
+  &__friend-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    color: #003ad8; // Màu của icon
-    font-size: 1.2rem;
-    padding: 0 0.5rem;
-    &:hover {
-      background-color: #dfe4e8;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+
+    &--add {
+      background-color: #003ad8;
+      color: #fff;
+      &:hover {
+        background-color: #002bb8;
+      }
+    }
+
+    &--accept {
+      background-color: #28a745;
+      color: #fff;
+      &:hover {
+        background-color: #218838;
+      }
+    }
+
+    &--cancel {
+      background-color: #dc3545;
+      color: #fff;
+      &:hover {
+        background-color: #c82333;
+      }
     }
   }
 }
