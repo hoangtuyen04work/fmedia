@@ -22,20 +22,6 @@ function CenterSearch() {
   const handleFriendAction = async (status, friendId) => {
     switch (status) {
       case "PENDING":
-        try {
-          const data = await acceptFriendRequest(token, friendId);
-          if (data.data.data === true) {
-            setSearchResults((prevResults) =>
-              prevResults.map((user) =>
-                user.userId === friendId
-                  ? { ...user, friendship: "ACCEPTED" }
-                  : user
-              )
-            );
-          }
-        } catch (error) {
-          console.error("Error sending friend request:", error);
-        }        break;
       case "ACCEPTED":
         try {
           const data = await cancelFriendRequest(token, friendId);
@@ -50,7 +36,25 @@ function CenterSearch() {
           }
         } catch (error) {
           console.error("Error sending friend request:", error);
-        }        break;
+        }
+        break;
+      case "WAITING":
+          try {
+            const data = await acceptFriendRequest(token, friendId);
+            console.log("adad", data);
+            if (data.data.data === true) {
+              setSearchResults((prevResults) =>
+                prevResults.map((user) =>
+                  user.userId === friendId
+                    ? { ...user, friendship: "ACCEPTED" }
+                    : user
+                )
+              );
+            }
+          } catch (error) {
+            console.error("Error sending friend request:", error);
+          }
+          break;
       default:
         try {
           const data = await sendFriendRequest(token, friendId);
@@ -75,6 +79,7 @@ function CenterSearch() {
     try {
       const data = await searchUser(token, searchValue, pageNum, size);
       const newResults = data.data.data.content;
+      console.log(newResults)
       setSearchResults((prev) => [...prev, ...newResults]);
       setHasMore(newResults.length >= size);
     } catch (error) {

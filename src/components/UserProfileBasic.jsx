@@ -1,37 +1,63 @@
 import React from "react";
 import "../styles/UserProfileBasic.scss";
-import { FaUserPlus, FaUserCheck, FaClock } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-function UserProfileBasic({imageLink, userName, customId, userId,  friendship, onFriendAction}) {
+function UserProfileBasic({ imageLink, userName, customId, userId, friendship, onFriendAction }) {
   const navigate = useNavigate();
+
   const handleProfileClick = () => {
     navigate(`/profile?customId=${customId}`);
   };
 
-  const handleFriendActionClick = () => {
-    onFriendAction(friendship, userId); // Truyền trạng thái hiện tại
+  const handleFriendActionClick = (action) => {
+    onFriendAction(friendship, userId, action); // Truyền thêm action để xử lý
   };
 
   const renderFriendButton = () => {
     switch (friendship) {
       case "ACCEPTED":
         return (
-          <div className="user-profile-basic__friend-status" onClick={handleFriendActionClick}>
-            <FaUserCheck />
-          </div>
+          <button
+            className="user-profile-basic__friend-button user-profile-basic__friend-button--cancel"
+            onClick={() => handleFriendActionClick("CANCEL")}
+          >
+            Hủy bạn bè
+          </button>
         );
       case "PENDING":
         return (
-          <div className="user-profile-basic__friend-status" onClick={handleFriendActionClick}>
-            <FaClock />
+          <button
+            className="user-profile-basic__friend-button user-profile-basic__friend-button--cancel"
+            onClick={() => handleFriendActionClick("CANCEL")}
+          >
+            Hủy lời mời
+          </button>
+        );
+      case "WAITING":
+        return (
+          <div className="user-profile-basic__friend-actions">
+            <button
+              className="user-profile-basic__friend-button user-profile-basic__friend-button--accept"
+              onClick={() => handleFriendActionClick("ACCEPT")}
+            >
+              Xác nhận
+            </button>
+            <button
+              className="user-profile-basic__friend-button user-profile-basic__friend-button--cancel"
+              onClick={() => handleFriendActionClick("CANCEL")}
+            >
+              Xóa
+            </button>
           </div>
         );
       default:
         return (
-          <div className="user-profile-basic__friend-status" onClick={handleFriendActionClick}>
-            <FaUserPlus />
-          </div>
+          <button
+            className="user-profile-basic__friend-button user-profile-basic__friend-button--add"
+            onClick={() => handleFriendActionClick("ADD")}
+          >
+            Thêm bạn
+          </button>
         );
     }
   };
@@ -44,7 +70,7 @@ function UserProfileBasic({imageLink, userName, customId, userId,  friendship, o
           alt="User profile"
           className="user-profile-basic__pic"
         />
-        <div className="user-profile-basic__info"  onClick={handleProfileClick}>
+        <div className="user-profile-basic__info" onClick={handleProfileClick}>
           <span className="user-profile-basic__name">{userName}</span>
           <span className="user-profile-basic__id">{customId}</span>
         </div>

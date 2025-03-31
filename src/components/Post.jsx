@@ -1,5 +1,5 @@
 // src/components/Post.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/Post.scss";
 import { like, unLike } from "../services/postService";
 import { useSelector } from "react-redux";
@@ -15,6 +15,10 @@ function Post({id,  avatarLink, customId, userName, creationDate,  content, imag
   const [comments, setComments] = useState([]);
   const token = useSelector((state) => state.user.token);
   const userId = useSelector((state) => state.user.user.userId);
+
+  useEffect(() => {
+    console.log(id,  avatarLink, customId, userName, creationDate,  content, imageLink )
+  })
   const handleLikeClick = async () => {
     if (isLiked) {
       setIsLiked(false);
