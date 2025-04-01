@@ -19,6 +19,7 @@ function RightBar() {
   }
 
   const handleContactClick = (friend) => {
+    console.log(friend)
     setSelectedContact(friend);
   };
 
@@ -64,6 +65,7 @@ function RightBar() {
       </div>
       {selectedContact && (
         <ChatWindow 
+          conversationId={selectedContact.conversationId}
           contact={selectedContact.userName} 
           userId={selectedContact.userId}
           onClose={handleCloseChat} 
