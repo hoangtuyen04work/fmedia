@@ -3,7 +3,6 @@ import { LOGOUT } from '../action/userAction'
 
 const INITIAL_STATE = {
     user: {
-        
         userName: "",
         customId: '',
         roles: [],
@@ -26,7 +25,7 @@ const userReducer = (state = INITIAL_STATE, action) => {
                 user: {
                     imageLink: action?.payload?.data?.user?.imageLink,
                     email: action?.payload?.data?.user?.email,
-                    refreshToken: action?.payload?.data?.user?.refreshToken,
+                    refreshToken: action?.payload?.data?.refreshToken,
                     id: action?.payload?.data?.user?.id,
                     phone: action?.payload?.user?.phone,
                    
