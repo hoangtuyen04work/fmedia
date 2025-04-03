@@ -103,7 +103,6 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
       const newMessage = { content: message || null, imageFile: previewImage,  conversationId: conversationId, senderId: userId , receiverId : [friendId, userId] };
       stompClientRef.current.publish({
         destination: `/app/conversation/${conversationId}`,
-        headers: { Authorization: `Bearer ${token}` },
         body: JSON.stringify(newMessage),
       });
       setPreviewImage(null);
@@ -114,7 +113,6 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
   const handleSendMessage = (e) => {
     if (!stompClientRef.current || !stompClientRef.current.connected) {
       console.error("STOMP client is not connected!");
-      alert("Cannot send message: WebSocket is not connected.");
       return;
     }
     if (e.key === "Enter" || e.type === "click") {
@@ -124,7 +122,6 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
         const newMessage = { content: message, imageFile: null, conversationId: conversationId, senderId: userId, receiverId : [friendId, userId] };
         stompClientRef.current.publish({
           destination: `/app/conversation/${conversationId}`,
-          headers: { Authorization: `Bearer ${token}` },
           body: JSON.stringify(newMessage),
         });
         setMessage("");
@@ -145,9 +142,9 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
   
     stompClient.onConnect = () => {
       setIsConnected(true);
-      stompClient.subscribe(`/user/queue/conversation/messages/${conversationId}`, (message) => {
+      stompClient.subscribe(`/user/${userId}/queue/conversation/messages/${conversationId}`, (message) => {
         const newMessage = JSON.parse(message.body);
-        console.log("new", newMessage);
+        console.log(newMessage);
         setMessages((prev) => [...prev, newMessage]);
         shouldScrollToBottom.current = true;
       });
@@ -161,7 +158,7 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
     stompClient.activate();
     stompClientRef.current = stompClient;
   };
-  
+
 
   const disconnectWebSocket = () => {
     if (stompClientRef.current && stompClientRef.current.connected) {
