@@ -11,7 +11,37 @@
   bottom: 1px;
   right: 1px;
 
+  &__empty {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 14px;
+
+    p {
+      margin: 5px 0;
+    }
+  }
+
+  .resize-handle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: transparent;
+    z-index: 10;
+
+    &.top-left {
+      top: -5px;
+      left: -5px;
+      cursor: nwse-resize;
+    }
+
+    &:hover {
+      background: #999;
+    }
+  }
+
   resize: both;
+
   .resize-handle {
     width: 15px;
     height: 15px;
@@ -22,6 +52,7 @@
     cursor: nwse-resize;
     border-radius: 50%;
   }
+
   &__header {
     padding: 0 10px;
     background: #434343;
@@ -77,16 +108,55 @@
     border-top: 1px solid #ddd;
     display: flex;
     color: rgb(0, 0, 0);
-    justify-content: center; // Sửa từ justify-items thành justify-content
+    justify-content: center;
     align-items: center;
     gap: 5px;
+    position: relative; // Added for positioning preview
+
+    .image-preview {
+      position: absolute;
+      top: -120px; // Adjust this value based on your needs
+      left: 10px;
+      display: inline-block;
+      margin-bottom: 10px;
+
+      img {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 5px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+      }
+
+      .remove-preview {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+
+        &:hover {
+          background: #f0f0f0;
+        }
+      }
+    }
 
     input {
       width: 100%;
       padding: 5px;
       border: 1px solid #ddd;
       border-radius: 4px;
+      flex-grow: 1; // Added to maintain flexibility
     }
+
     .image-upload {
       cursor: pointer;
       display: flex;
@@ -95,13 +165,21 @@
       font-size: 20px;
       color: #555;
       padding: 0 5px;
+
       &:hover {
         color: #095bff;
         border-radius: 8px;
       }
     }
+
     .send {
       cursor: pointer;
+      display: flex; // Added for consistency
+      align-items: center; // Added for consistency
+      justify-content: center; // Added for consistency
+      font-size: 20px; // Added to match image-upload
+      color: #555; // Added to match image-upload
+      padding: 0 5px; // Added to match image-upload
 
       &:hover {
         color: #095bff;

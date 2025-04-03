@@ -64,6 +64,8 @@ function RightBar() {
       </div>
       {selectedContact && (
         <ChatWindow 
+          conversationId={selectedContact.conversationId}
+          friendId={selectedContact.userId}
           contact={selectedContact.userName} 
           userId={selectedContact.userId}
           onClose={handleCloseChat} 

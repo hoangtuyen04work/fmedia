@@ -79,7 +79,6 @@ function CenterSearch() {
     try {
       const data = await searchUser(token, searchValue, pageNum, size);
       const newResults = data.data.data.content;
-      console.log(newResults)
       setSearchResults((prev) => [...prev, ...newResults]);
       setHasMore(newResults.length >= size);
     } catch (error) {

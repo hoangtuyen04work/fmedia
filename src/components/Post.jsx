@@ -16,9 +16,6 @@ function Post({id,  avatarLink, customId, userName, creationDate,  content, imag
   const token = useSelector((state) => state.user.token);
   const userId = useSelector((state) => state.user.user.userId);
 
-  useEffect(() => {
-    console.log(id,  avatarLink, customId, userName, creationDate,  content, imageLink )
-  })
   const handleLikeClick = async () => {
     if (isLiked) {
       setIsLiked(false);

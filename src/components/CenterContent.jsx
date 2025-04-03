@@ -25,12 +25,10 @@ function CenterContent() {
     if (loading || !hasMore) return;
     setLoading(true);
     const data = await getHome(token, page, 10);
-    if (data.data.data.totalPages === page) {
+    if (data.data.data.totalPages - 1 === page) {
       setHasMore(false); 
     }
-    console.log(data.data.data.content)
     setPosts((prev) => [...prev, ...data.data.data.content]);
-
     setLoading(false);
   };
 
@@ -38,23 +36,25 @@ function CenterContent() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          setPage((prev) => prev + 1);
-        }
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("show");
+          }
+        });
       },
-      { threshold: 1.0 }
+      { threshold: 0.1 }
     );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
+  
+    postsRef.current.forEach((post) => {
+      if (post) observer.observe(post);
+    });
+  
     return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
-      }
+      postsRef.current.forEach((post) => {
+        if (post) observer.unobserve(post);
+      });
     };
-  }, [hasMore, loading]);
+  }, [posts]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
