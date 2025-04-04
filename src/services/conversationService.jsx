@@ -1,5 +1,13 @@
 import api from "../api/custom-axios";
 
+const getget = (token, content) => {
+    return  api.post(`/test`, content, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}
+
 const getConversation = (token, conversationId, page, size) => {
     return  api.get(`/conversation?id=${conversationId}&page=${page}&size=${size}`, {
         headers: {
@@ -26,4 +34,4 @@ const deleteMessage = (token, messageId) => {
     });
 }
 
-export {getConversation, editMessage, deleteMessage };
+export {getConversation, editMessage, deleteMessage, getget };
