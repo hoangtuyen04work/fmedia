@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "../styles/ChatWindow.scss";
 import { IoSend, IoImageOutline, IoClose } from "react-icons/io5";
 import { useSelector } from "react-redux";
-import { getConversation } from "../services/conversationService";
+import { getConversation, getget } from "../services/conversationService";
 import { Client } from "@stomp/stompjs";
 
 function ChatWindow({ friendId, conversationId, contact, onClose }) {
@@ -20,6 +20,7 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
   const [previewImage, setPreviewImage] = useState(null);
   const stompClientRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [fileName, setFileName] = useState();
 
   // Resize handlers
   const handleMouseDown = (direction) => (e) => {
@@ -92,15 +93,33 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) { // Giới hạn 10MB
+        alert("File size exceeds 10MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (e) => setPreviewImage(e.target.result);
+      setFileName(file.name);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSendMessageImage = () => {
+  const handleSendMessageImage = async () => {
+    var imageBase64 = previewImage.split(",")[1];
+    console.log(imageBase64)
     if (previewImage && stompClientRef.current && stompClientRef.current.connected) {
-      const newMessage = { content: message || null, imageFile: previewImage,  conversationId: conversationId, senderId: userId , receiverId : [friendId, userId] };
+      const newMessage = {
+        content: message || "null",
+        imageBase64: imageBase64, 
+        fileName: fileName, 
+        conversationId: conversationId,
+        senderId: userId,
+        receiverId: [friendId, userId]
+      };
       stompClientRef.current.publish({
         destination: `/app/conversation/${conversationId}`,
         body: JSON.stringify(newMessage),
@@ -119,7 +138,14 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
       if (previewImage) {
         handleSendMessageImage();
       } else if (message.trim()) {
-        const newMessage = { content: message, imageFile: null, conversationId: conversationId, senderId: userId, receiverId : [friendId, userId] };
+        const newMessage = {
+          content: message,
+          imageBase64: null,
+          fileName: null, 
+          conversationId: conversationId,
+          senderId: userId,
+          receiverId: [friendId, userId]
+        };
         stompClientRef.current.publish({
           destination: `/app/conversation/${conversationId}`,
           body: JSON.stringify(newMessage),
