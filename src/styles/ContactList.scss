@@ -1,0 +1,103 @@
+$light-gray: #72c3c9;
+$hover-bg: #e4e6eb;
+$online-dot: #31a24c; // Màu xanh cho chấm online
+
+.contact-list {
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #65676b;
+    margin-bottom: 10px;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $hover-bg;
+      border-radius: 8px;
+    }
+  }
+
+  &__avatar-wrapper {
+    position: relative;
+    margin-right: 10px;
+  }
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &__default-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ccc;
+    font-size: 20px;
+  }
+
+  &__online-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    background-color: $online-dot;
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  &__name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c1e21;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 4px;
+  }
+
+  &__last-message-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__last-message {
+    font-size: 12px;
+    color: #65676b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  &__time {
+    font-size: 12px;
+    color: #65676b;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+}
