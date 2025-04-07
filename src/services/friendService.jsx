@@ -3,20 +3,14 @@ import api from "../api/custom-axios";
 
 
 const getMyFriend = (token) => {
-    return  api.get(`/friendship/all/accepted`, {
+    return  api.get(`/friendship/all/messing`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     });
 }
 
-const unfriend = (token) => {
-    return  api.get(`/friendship/all`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-}
+
 
 const acceptFriendRequest = (token, friendId) => {
     return  api.put(`/friendship/accept`, friendId, {
@@ -45,4 +39,28 @@ const sendFriendRequest = (token, friendId) => {
     });
 }
 
-export { getMyFriend, sendFriendRequest, cancelFriendRequest, acceptFriendRequest, unfriend};
+const getFriendsList = (token, pageNum, size) => {
+    return  api.get(`/friendship/all/accepted?page=${pageNum}&size=${size}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}
+
+const getFriendsRequests = (token, pageNum, size) => {
+    return  api.get(`/friendship/all/waiting?page=${pageNum}&size=${size}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}
+
+const getSentRequests = (token, pageNum, size) => {
+    return  api.get(`/friendship/all/pending?page=${pageNum}&size=${size}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}
+
+export { getMyFriend, sendFriendRequest, cancelFriendRequest, acceptFriendRequest, getFriendsRequests, getSentRequests, getFriendsList};
