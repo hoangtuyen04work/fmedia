@@ -7,6 +7,10 @@ import Search from './pages/Search';
 import Auth from './pages/Auth'; 
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
+import FriendsList from './pages/FriendsList';
+import SendRequests from './pages/SendRequests';
+import FriendsRequests from './pages/FriendsRequests';
+
 function App() {
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated)
   return (
@@ -22,6 +26,9 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/search" element={<Search />} />
+                <Route path="/friends/requests" element={<FriendsRequests />} />
+                <Route path="/friends/list" element={<FriendsList />} />
+                <Route path="/friends/sent-requests" element={<SendRequests />} />
               </Routes>
             </main>
           </>

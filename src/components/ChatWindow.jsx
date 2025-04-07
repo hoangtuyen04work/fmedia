@@ -1,11 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../styles/ChatWindow.scss";
-import { IoSend, IoImageOutline, IoClose } from "react-icons/io5";
 import { useSelector } from "react-redux";
-import { getConversation, getget } from "../services/conversationService";
-import { Client } from "@stomp/stompjs";
+import { getConversation } from "../services/conversationService";
+import MessageForm from "./MessageForm";
+import webSocketService from "../services/WebSocketService";
 
-function ChatWindow({ friendId, conversationId, contact, onClose }) {
+function ChatWindow({
+  friendId,
+  conversationId,
+  contact,
+  onClose,
+  handleUpdateNewestMessage,
+  newMessage, // Nhận tin nhắn mới từ RightBar
+}) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const chatBodyRef = useRef(null);
@@ -18,8 +25,6 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
   const sizePage = 10;
   const [isLoading, setIsLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
-  const stompClientRef = useRef(null);
-  const [isConnected, setIsConnected] = useState(false);
   const [fileName, setFileName] = useState();
 
   // Resize handlers
@@ -33,10 +38,14 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
       setSize((prevSize) => {
         let newWidth = prevSize.width;
         let newHeight = prevSize.height;
-        if (resizeDirection.includes("right")) newWidth = Math.max(250, prevSize.width + e.movementX);
-        if (resizeDirection.includes("left")) newWidth = Math.max(250, prevSize.width - e.movementX);
-        if (resizeDirection.includes("bottom")) newHeight = Math.max(300, prevSize.height + e.movementY);
-        if (resizeDirection.includes("top")) newHeight = Math.max(300, prevSize.height - e.movementY);
+        if (resizeDirection.includes("right"))
+          newWidth = Math.max(250, prevSize.width + e.movementX);
+        if (resizeDirection.includes("left"))
+          newWidth = Math.max(250, prevSize.width - e.movementX);
+        if (resizeDirection.includes("bottom"))
+          newHeight = Math.max(300, prevSize.height + e.movementY);
+        if (resizeDirection.includes("top"))
+          newHeight = Math.max(300, prevSize.height - e.movementY);
         return { width: newWidth, height: newHeight };
       });
     }
@@ -89,16 +98,31 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
     }
   };
 
+  // Nhận tin nhắn mới từ WebSocket (qua prop newMessage)
+  useEffect(() => {
+    if (newMessage && newMessage.conversationId === conversationId) {
+      const formattedMessage = {
+        content: newMessage.content !== "null" ? newMessage.content : null,
+        imageLink: newMessage.imageLink || null,
+        senderId: newMessage.senderId,
+        sendAt: newMessage.sendAt || new Date().toISOString(),
+        conversationId: newMessage.conversationId,
+      };
+      setMessages((prev) => [...prev, formattedMessage]);
+      shouldScrollToBottom.current = true;
+    }
+  }, [newMessage, conversationId]);
+
   // Image handling
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Please select an image file");
+        alert("Vui lòng chọn một file hình ảnh");
         return;
       }
-      if (file.size > 10 * 1024 * 1024) { // Giới hạn 10MB
-        alert("File size exceeds 10MB");
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Kích thước file vượt quá 10MB");
         return;
       }
       const reader = new FileReader();
@@ -108,98 +132,35 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
     }
   };
 
-  const handleSendMessageImage = async () => {
-    var imageBase64 = previewImage.split(",")[1];
-    console.log(imageBase64)
-    if (previewImage && stompClientRef.current && stompClientRef.current.connected) {
-      const newMessage = {
-        content: message || "null",
-        imageBase64: imageBase64, 
-        fileName: fileName, 
-        conversationId: conversationId,
-        senderId: userId,
-        receiverId: [friendId, userId]
-      };
-      stompClientRef.current.publish({
-        destination: `/app/conversation/${conversationId}`,
-        body: JSON.stringify(newMessage),
-      });
-      setPreviewImage(null);
-      setMessage("");
-    }
-  };
-
   const handleSendMessage = (e) => {
-    if (!stompClientRef.current || !stompClientRef.current.connected) {
-      console.error("STOMP client is not connected!");
-      return;
-    }
     if (e.key === "Enter" || e.type === "click") {
       if (previewImage) {
-        handleSendMessageImage();
+        const imageBase64 = previewImage.split(",")[1];
+        const newMessage = {
+          content: message || "null",
+          imageBase64: imageBase64,
+          fileName: fileName,
+          conversationId: conversationId,
+          senderId: userId,
+          receiverId: [friendId, userId],
+        };
+        webSocketService.sendMessage(`/app/conversation/${conversationId}`, newMessage);
+        setPreviewImage(null);
+        setMessage("");
       } else if (message.trim()) {
         const newMessage = {
           content: message,
           imageBase64: null,
-          fileName: null, 
+          fileName: null,
           conversationId: conversationId,
           senderId: userId,
-          receiverId: [friendId, userId]
+          receiverId: [friendId, userId],
         };
-        stompClientRef.current.publish({
-          destination: `/app/conversation/${conversationId}`,
-          body: JSON.stringify(newMessage),
-        });
+        webSocketService.sendMessage(`/app/conversation/${conversationId}`, newMessage);
         setMessage("");
       }
     }
   };
-
-
-  const connectWebSocket = () => {
-    if (stompClientRef.current && stompClientRef.current.connected) {
-      console.log("WebSocket already connected");
-      setIsConnected(true);
-      return;
-    }
-    const stompClient = new Client({
-      brokerURL: `ws://localhost:8888/media/ws?token=${token}`, // Gửi token qua URL
-    });
-  
-    stompClient.onConnect = () => {
-      setIsConnected(true);
-      stompClient.subscribe(`/user/${userId}/queue/conversation/messages/${conversationId}`, (message) => {
-        const newMessage = JSON.parse(message.body);
-        console.log(newMessage);
-        setMessages((prev) => [...prev, newMessage]);
-        shouldScrollToBottom.current = true;
-      });
-    };
-  
-    stompClient.onStompError = (error) => {
-      console.error("WebSocket connection error:", error);
-      setIsConnected(false);
-    };
-  
-    stompClient.activate();
-    stompClientRef.current = stompClient;
-  };
-
-
-  const disconnectWebSocket = () => {
-    if (stompClientRef.current && stompClientRef.current.connected) {
-      stompClientRef.current.deactivate();
-      setIsConnected(false);
-      console.log("Disconnected from WebSocket");
-    }
-  };
-
-  useEffect(() => {
-    if (token && conversationId) {
-      connectWebSocket();
-      return () => disconnectWebSocket();
-    }
-  }, [token, conversationId]);
 
   useEffect(() => {
     if (shouldScrollToBottom.current && chatBodyRef.current) {
@@ -225,11 +186,11 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
         <button className="chat-window__close" onClick={onClose}>×</button>
       </div>
       <div className="chat-window__body" ref={chatBodyRef} onScroll={handleScroll}>
-        {isLoading && <div>Loading...</div>}
+        {isLoading && <div>Đang tải...</div>}
         {messages.length === 0 && !isLoading && (
           <div className="chat-window__empty">
-            <p>No messages yet!</p>
-            <p>Start the conversation with {contact} by sending a message below.</p>
+            <p>Chưa có tin nhắn nào!</p>
+            <p>Bắt đầu cuộc trò chuyện với {contact} bằng cách gửi tin nhắn bên dưới.</p>
           </div>
         )}
         {messages.map((msg, index) => (
@@ -239,35 +200,32 @@ function ChatWindow({ friendId, conversationId, contact, onClose }) {
           >
             {msg.content && <div>{msg.content}</div>}
             {msg.imageLink && (
-              <img src={msg.imageLink} alt="Attached" style={{ maxWidth: "100%", borderRadius: "5px", marginTop: "5px" }} />
+              <img
+                src={msg.imageLink}
+                alt="Đính kèm"
+                style={{ maxWidth: "100%", borderRadius: "5px", marginTop: "5px" }}
+              />
             )}
-            <div style={{ fontSize: "10px", opacity: 0.7 }}>{new Date(msg.sendAt).toLocaleTimeString()}</div>
+            <div style={{ fontSize: "10px", opacity: 0.7 }}>
+              {new Date(msg.sendAt).toLocaleTimeString("vi-VN", {
+                timeZone: "Asia/Ho_Chi_Minh",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
           </div>
         ))}
       </div>
       <div className="chat-window__footer">
-        {previewImage && (
-          <div className="image-preview">
-            <img src={previewImage} alt="Preview" />
-            <button className="remove-preview" onClick={() => setPreviewImage(null)}>
-              <IoClose />
-            </button>
-          </div>
-        )}
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleSendMessage}
-          placeholder="Type a message..."
+        <MessageForm
+          message={message}
+          setMessage={setMessage}
+          previewImage={previewImage}
+          setPreviewImage={setPreviewImage}
+          handleSendMessage={handleSendMessage}
+          handleImageChange={handleImageChange}
+          fileName={fileName}
         />
-        <label htmlFor="image-upload" className="image-upload">
-          <IoImageOutline />
-          <input id="image-upload" type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
-        </label>
-        <div className="send" onClick={handleSendMessage}>
-          <IoSend />
-        </div>
       </div>
       <div className="resize-handle top-left" onMouseDown={handleMouseDown("top-left")}></div>
     </div>

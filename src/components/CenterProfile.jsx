@@ -3,9 +3,16 @@ import "../styles/CenterProfile.scss";
 import Post from "./Post";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getMyProfile, getUserProfileByCustomId } from "../services/userService";
+import { editUserInform, getMyProfile, getUserProfileByCustomId } from "../services/userService";
 import { getMyPost, getUserPosts } from "../services/postService";
-import { sendFriendRequest, cancelFriendRequest, acceptFriendRequest, unfriend } from "../services/friendService";
+import { sendFriendRequest, cancelFriendRequest, acceptFriendRequest } from "../services/friendService";
+
+// Utility function to format date to yyyy-MM-dd
+const formatDateToYMD = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  return d.toISOString().split("T")[0]; // Returns "1111-11-10" from "1111-11-10T17:00:00.000+00:00"
+};
 
 function CenterProfile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -24,20 +31,20 @@ function CenterProfile() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const searchParams = new URLSearchParams(location.search); // Sửa ở đây
+  const searchParams = new URLSearchParams(location.search);
   const customId = searchParams.get("customId");
   const isOwnProfile = !customId || customId === currentUser?.customId;
-
 
   const fetchProfile = async () => {
     try {
       if (isOwnProfile) {
         const data = await getMyProfile(token);
-        setProfileData(data.data);
-        setTempData(data.data);
+        console.log(data)
+        setProfileData({ ...data.data, dob: formatDateToYMD(data.data.dob) });
+        setTempData({ ...data.data, dob: formatDateToYMD(data.data.dob) });
       } else {
         const data = await getUserProfileByCustomId(token, customId);
-        setProfileData(data.data);
+        setProfileData({ ...data.data, dob: formatDateToYMD(data.data.dob) });
         setFriendStatus(data.data.friendStatus);
       }
     } catch (error) {
@@ -45,6 +52,7 @@ function CenterProfile() {
       navigate("/profile");
     }
   };
+
   const fetchPosts = async (currentPage) => {
     if (!hasMore || loading) return;
     setLoading(true);
@@ -52,7 +60,6 @@ function CenterProfile() {
       const data = isOwnProfile
         ? await getMyPost(token, currentPage, size)
         : await getUserPosts(token, customId, currentPage, size);
-      console.log(data)
       const newPosts = data.data.data.content;
       if (newPosts.length < size) {
         setHasMore(false);
@@ -75,12 +82,15 @@ function CenterProfile() {
   }, [token, customId, isOwnProfile]);
 
   useEffect(() => {
+    console.log(tempData)
+    console.log(tempData.email, tempData.phone)
     fetchProfile();
   }, [isOwnProfile]);
+
   useEffect(() => {
     fetchPosts(page);
-  }, [page]); // Gọi khi page thay đổi
-  
+  }, [page]);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -109,18 +119,17 @@ function CenterProfile() {
       },
       { threshold: 0.1 }
     );
-  
+
     if (loaderRef.current) {
       observer.observe(loaderRef.current);
     }
-  
+
     return () => {
       if (loaderRef.current) {
         observer.unobserve(loaderRef.current);
       }
     };
   }, [hasMore, loading]);
-  
 
   const handleFriendAction = async (action) => {
     try {
@@ -158,13 +167,6 @@ function CenterProfile() {
     setTempData({ ...profileData });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setProfileData({ ...tempData });
-    setIsEditing(false);
-    // TODO: Gọi API để update profile nếu cần
-  };
-
   const handleChange = (e) => {
     setTempData({
       ...tempData,
@@ -175,14 +177,29 @@ function CenterProfile() {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setTempData({
+        ...tempData,
+        imageFile: file,
+      });
       const reader = new FileReader();
       reader.onloadend = () => {
-        setTempData({
-          ...tempData,
-          imageLink: reader.result,
-        });
+        setTempData((prev) => ({
+          ...prev,
+          imagePreview: reader.result,
+        }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await editUserInform(token, tempData);
+      setProfileData({ ...response.data.data, dob: formatDateToYMD(response.data.data.dob) });
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
     }
   };
 
@@ -223,11 +240,15 @@ function CenterProfile() {
         <form className="profile-form" onSubmit={handleSubmit}>
           <div className="form-group avatar-edit">
             <div className="avatar-preview">
-              <img src={tempData.imageLink} alt="Avatar preview" className="avatar" />
+              <img
+                src={tempData.imagePreview || tempData.imageLink}
+                alt="Avatar preview"
+                className="avatar"
+              />
               <input
                 type="file"
                 id="avatar"
-                name="avatar"
+                name="imageFile"
                 accept="image/*"
                 onChange={handleAvatarChange}
               />
@@ -288,9 +309,7 @@ function CenterProfile() {
             />
           </div>
           <div className="form-actions">
-            <button type="submit" className="save-btn">
-              Save
-            </button>
+            <button type="submit" className="save-btn">Save</button>
             <button type="button" className="cancel-btn" onClick={handleCancel}>
               Cancel
             </button>
