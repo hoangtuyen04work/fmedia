@@ -25,7 +25,7 @@ function CenterContent() {
     if (loading || !hasMore) return;
     setLoading(true);
     const data = await getHome(token, page, 10);
-    if (data.data.data.totalPages - 1 === page) {
+    if (data.data.data.totalPages - 1 === page || data.data.data.totalPages - 1 < page) {
       setHasMore(false); 
     }
     setPosts((prev) => [...prev, ...data.data.data.content]);
@@ -75,7 +75,7 @@ function CenterContent() {
       };
       const data = await newPost(token, newPostData);
       console.log("data", data);
-      setPosts([newPost, ...posts]);
+      setPosts([data.data.data, ...posts]);
       setNewPostText("");
       setNewPostImage(null);
       setIsModalOpen(false);
