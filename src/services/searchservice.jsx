@@ -12,7 +12,7 @@ const searchUser = (token, customId, pageNum, size) => {
 
 
 const searchPost = (token, keyWord, currentPage, size) => {
-    return  api.get(`/post/search?keyWord=${keyWord}`, {
+    return  api.get(`/search/post?keyWord=${keyWord}&page=${currentPage}&size=${size}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },

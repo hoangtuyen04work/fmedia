@@ -39,7 +39,6 @@ function CenterProfile() {
     try {
       if (isOwnProfile) {
         const data = await getMyProfile(token);
-        console.log(data)
         setProfileData({ ...data.data, dob: formatDateToYMD(data.data.dob) });
         setTempData({ ...data.data, dob: formatDateToYMD(data.data.dob) });
       } else {
@@ -78,18 +77,19 @@ function CenterProfile() {
     setPage(0);
     setHasMore(true);
     setLoading(false);
-    fetchPosts(page);
+    fetchPosts(0); // Gọi fetchPosts ngay khi customId hoặc isOwnProfile thay đổi
   }, [token, customId, isOwnProfile]);
+  
+  useEffect(() => {
+    if (page > 0) { // Chỉ fetch thêm khi page tăng, tránh gọi lại khi page = 0
+      fetchPosts(page);
+    }
+  }, [page]);
 
   useEffect(() => {
-    console.log(tempData)
-    console.log(tempData.email, tempData.phone)
     fetchProfile();
   }, [isOwnProfile]);
 
-  useEffect(() => {
-    fetchPosts(page);
-  }, [page]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -181,7 +181,17 @@ function CenterProfile() {
         ...tempData,
         imageFile: file,
       });
-      const reader = new FileReader();
+      const reader = new FileReader();<div className="post__header">
+      {avatarLink ? (
+        <img src={avatarLink} alt="User" className="post__pic" onError={(e) => { e.target.src = 'https://via.placeholder.com/32x32'; }} />
+      ) : (
+        <img src="https://via.placeholder.com/32x32" alt="Default User" className="post__pic" />
+      )}
+      <div>
+        <span className="post__name">{userName}</span>
+        <span className="post__time">{creationDate}</span>
+      </div>
+    </div>
       reader.onloadend = () => {
         setTempData((prev) => ({
           ...prev,
