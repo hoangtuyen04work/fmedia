@@ -4,7 +4,7 @@ import { CgProfile } from "react-icons/cg";
 import { IoIosLogOut } from "react-icons/io";
 import { AiOutlineSearch } from "react-icons/ai";
 import "../styles/Header.scss";
-import NotificationDropdown from "./NotificationDropDown";
+// import NotificationDropdown from "./NotificationDropDown";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../services/authService";
 import { doLogout } from "../redux/action/userAction";
@@ -76,7 +76,7 @@ function Header() {
   <div className="header__icon" onClick={() => navigate("/profile")}>
     <CgProfile />
   </div>
-  <NotificationDropdown />
+  {/* <NotificationDropdown /> */}
   <div className="header__icon header__logout" onClick={handleLogout}>
     <IoIosLogOut />
   </div>

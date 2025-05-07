@@ -10,6 +10,7 @@
   border-radius: 1rem;
   bottom: 1px;
   right: 1px;
+  resize: both;
 
   &__empty {
     text-align: center;
@@ -39,9 +40,6 @@
       background: #999;
     }
   }
-
-  resize: both;
-
   .resize-handle {
     width: 15px;
     height: 15px;

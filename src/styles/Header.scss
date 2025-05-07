@@ -1,5 +1,5 @@
 // src/components/Header.scss
-
+@use 'sass:color';
 // Variables for Facebook-like colors
 $facebook-blue: #7e93e4;
 $light-gray: #f0f2f5;
@@ -36,8 +36,7 @@ $white: #fff;
             color: $facebook-blue;
             cursor: pointer;
             &:hover {
-                background-color: darken($icon-bg, 10%);
-            }
+                background-color: color.adjust($icon-bg, $lightness: -10%);            }
         }
     }
 
@@ -82,8 +81,7 @@ $white: #fff;
         cursor: pointer;
 
         &:hover {
-            background-color: darken($icon-bg, 10%);
-        }
+            background-color: color.adjust($icon-bg, $lightness: -10%);        }
         
     }
 

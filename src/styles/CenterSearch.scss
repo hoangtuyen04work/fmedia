@@ -1,5 +1,16 @@
 // src/styles/SearchCenter.scss
 .search-center {
+  max-height: 86vh;
+  overflow-y: auto;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 80vh;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  padding: 0 1rem;
   &__loading {
     text-align: center;
     padding: 20px;
@@ -12,17 +23,7 @@
     color: #666;
     font-style: italic;
   }
-    max-height: 86vh;
-    overflow-y: auto;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    min-height: 80vh;
-    max-width: 680px;
-    display: flex;
-    flex-direction: column;
-    margin: 0 auto;
-    padding: 0 1rem;
+
   
     &__title {
       color: #333;
