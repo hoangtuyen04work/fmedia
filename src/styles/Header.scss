@@ -1,95 +1,50 @@
-// src/components/Header.scss
 @use 'sass:color';
+
 // Variables for Facebook-like colors
 $facebook-blue: #7e93e4;
 $light-gray: #f0f2f5;
 $icon-bg: #e4e6eb;
 $white: #fff;
+$notification-badge-bg: #e41e3f; // Red for badge
+$notification-badge-color: #fff; // White text for badge
 
 .header {
-    background-color: $facebook-blue;
-    height: 68px;
+  background-color: $facebook-blue;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  justify-content: space-around;
+
+  &__logo {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    padding: 0 10px;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    justify-content: space-around;
-    &__logo {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
 
-        &-icon {
-            padding: 5px;
-            border-radius: 20px;
-            max-height: 30px;
-            background-color: $white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: $facebook-blue;
-            cursor: pointer;
-            &:hover {
-                background-color: color.adjust($icon-bg, $lightness: -10%);            }
-        }
+    &-icon {
+      padding: 5px;
+      border-radius: 20px;
+      max-height: 30px;
+      background-color: $white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: $facebook-blue;
+      cursor: pointer;
+      &:hover {
+        background-color: color.adjust($icon-bg, $lightness: -10%);
+      }
     }
+  }
 
-    &__search {
-        flex: 1;
-        max-width: 500px;
-        margin: 0 20px;
-
-        &-input {
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: 20px;
-            border: none;
-            background-color: $light-gray;
-            font-size: 14px;
-            outline: none;
-            color: #000000;
-            &::placeholder {
-                color: #606770; // Facebook's placeholder color
-            }
-        }
-    }
-
-    &__icons {
-        
-        color: #7e93e4;
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    &__icon {
-        font-size: 24px;
-        width: 46px;
-        height: 46px;
-        background-color: $icon-bg;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-
-        &:hover {
-            background-color: color.adjust($icon-bg, $lightness: -10%);        }
-        
-    }
-
-    &__logout{
-        color: #ff0202;
-    }
-}
-.header__search {
+  &__search {
     display: flex;
     align-items: center;
     max-width: 500px;
@@ -100,49 +55,92 @@ $white: #fff;
     position: relative;
 
     &-container {
-        display: flex;
-        align-items: center;
-        flex: 1;
-        background-color: transparent;
-        padding: 0 10px;
+      display: flex;
+      align-items: center;
+      flex: 1;
+      background-color: transparent;
+      padding: 0 10px;
     }
 
     &-input {
-        flex: 1;
-        padding: 8px 12px;
-        border: none;
-        background-color: transparent;
-        font-size: 14px;
-        outline: none;
-        color: #000;
-        transition: flex 0.3s ease-in-out;
-    }
-
-    &-divider {
-        color: #606770;
-        font-size: 18px;
-        margin: 0 8px;
-        user-select: none;
-    }
-
-    .expanded {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background-color: transparent;
+      font-size: 14px;
+      outline: none;
+      color: #000;
+      transition: flex 0.3s ease-in-out;
+      &.expanded {
         flex: 2;
+      }
+      &::placeholder {
+        color: #606770;
+      }
     }
 
     &-button {
-        font-size: 24px;
-        background: none;
-        border: none;
-        color: #000000;
-        cursor: pointer;
-        padding: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: color 0.2s;
-
-        &:hover {
-            color: #333;
-        }
+      font-size: 24px;
+      background: none;
+      border: none;
+      color: #000000;
+      cursor: pointer;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+      &:hover {
+        color: #333;
+      }
     }
+  }
+
+  &__icons {
+    color: #7e93e4;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  &__icon {
+    font-size: 24px;
+    width: 46px;
+    height: 46px;
+    background-color: $icon-bg;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative; // For badge positioning
+    &:hover {
+      background-color: color.adjust($icon-bg, $lightness: -10%);
+    }
+  }
+
+  &__logout {
+    color: #ff0202;
+  }
+
+  .notification-icon {
+    position: relative;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: $notification-badge-bg;
+    color: $notification-badge-color;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    line-height: 18px;
+    z-index: 1; // Ensure badge is above icon
+  }
 }

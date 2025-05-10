@@ -4,29 +4,33 @@ import { CgProfile } from "react-icons/cg";
 import { IoIosLogOut } from "react-icons/io";
 import { AiOutlineSearch } from "react-icons/ai";
 import "../styles/Header.scss";
-// import NotificationDropdown from "./NotificationDropDown";
+import NotificationDropdown from "./NotificationDropdown";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../services/authService";
 import { doLogout } from "../redux/action/userAction";
+
 function Header() {
   const navigate = useNavigate();
-  const [searchType, setSearchType] = useState(null); // 'post' hoặc 'user'
-  const [searchValue, setSearchValue] = useState(""); // Nội dung người dùng nhập vào
+  const [searchType, setSearchType] = useState(null); // 'post' or 'user'
+  const [searchValue, setSearchValue] = useState(""); // Search input content
+  const [unreadCount, setUnreadCount] = useState(0); // Track unread notifications
   const dispatch = useDispatch();
   const token = useSelector((state) => state.user.user.token);
+
   const handleLogout = () => {
     logout(token);
     dispatch(doLogout());
-    navigate("/auth")
-  }
+    navigate("/auth");
+  };
+
   const handleSearch = () => {
     if (searchValue.trim() !== "") {
       console.log(`Searching ${searchType}:`, searchValue);
-      navigate("/search", { 
-        state: { 
-          searchType, 
-          searchValue 
-        } 
+      navigate("/search", {
+        state: {
+          searchType,
+          searchValue,
+        },
       });
     }
   };
@@ -35,6 +39,10 @@ function Header() {
     if (e.key === "Enter") {
       handleSearch();
     }
+  };
+
+  const handleUnreadCountChange = (count) => {
+    setUnreadCount(count);
   };
 
   return (
@@ -73,14 +81,21 @@ function Header() {
       </div>
 
       <div className="header__icons">
-  <div className="header__icon" onClick={() => navigate("/profile")}>
-    <CgProfile />
-  </div>
-  {/* <NotificationDropdown /> */}
-  <div className="header__icon header__logout" onClick={handleLogout}>
-    <IoIosLogOut />
-  </div>
-</div>
+        <div className="header__icon" onClick={() => navigate("/profile")}>
+          <CgProfile />
+        </div>
+        <div className="header__icon notification-icon">
+          <NotificationDropdown onUnreadCountChange={handleUnreadCountChange} />
+          {unreadCount > 0 && (
+            <span className="notification-badge">
+              {unreadCount >= 10 ? "10+" : unreadCount}
+            </span>
+          )}
+        </div>
+        <div className="header__icon header__logout" onClick={handleLogout}>
+          <IoIosLogOut />
+        </div>
+      </div>
     </header>
   );
 }
